@@ -5,5 +5,10 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="StlSpy.MainWindow"
         Title="StlSpy">
-    Welcome to Avalonia!
+    <DockPanel>
+        <Panel Background="OrangeRed" Height="50" DockPanel.Dock="Top">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Name="StackPanel" />
+        </Panel>
+        <Panel Name="MainContent" />
+    </DockPanel>
 </Window>

@@ -2,6 +2,37 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="StlSpy.App">
     <Application.Styles>
-        <FluentTheme Mode="Light"/>
+        <FluentTheme Mode="Dark"/>
+        <Style Selector="Label,Button,MenuItem">
+            <Setter Property="FontFamily" Value="/Assets/Fonts/Roboto-Regular.ttf"/>
+        </Style>
+        <Style Selector="MenuItem.ButtonLike,Menu.ButtonLike">
+            <Setter Property="Background" Value="{DynamicResource ButtonBackground}" />
+            <Setter Property="Foreground" Value="{DynamicResource ButtonForeground}" />
+            <Setter Property="BorderBrush" Value="{DynamicResource ButtonBorderBrush}" />
+            <Setter Property="BorderThickness" Value="{DynamicResource ButtonBorderThemeThickness}" />
+            <Setter Property="CornerRadius" Value="{DynamicResource ControlCornerRadius}" />
+            <Setter Property="Padding" Value="{DynamicResource ButtonPadding}" />
+            <Setter Property="FontWeight" Value="Normal" />
+            <Setter Property="FontSize" Value="{DynamicResource ControlContentThemeFontSize}" />
+        </Style>
+        <Style Selector="Button.darker">
+            <Setter Property="Background" Value="#C4000000"/>
+        </Style>
+        <Style Selector="Button.darker:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#80000000"/>
+        </Style>
+        <Style Selector="Button.darker:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="Black"/>
+        </Style>
+        <Style Selector="Menu.darker">
+            <Setter Property="Background" Value="#C4000000"/>
+        </Style>
+        <Style Selector="Menu.darker:pointerover /template/ ContentPresenter">
+            <Setter Property="Background" Value="#80000000"/>
+        </Style>
+        <Style Selector="Menu.darker:pressed /template/ ContentPresenter">
+            <Setter Property="Background" Value="Black"/>
+        </Style>
     </Application.Styles>
 </Application>
