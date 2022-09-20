@@ -29,6 +29,10 @@ namespace StlSpy
             }), "Sites");
             
             StackPanel.Children.Add(menuButton);
+            
+            StackPanel.Children.Add(new MenuButton(new List<Command>(), "Search"));
+            StackPanel.Children.Add(new MenuButton(new List<Command>(), "Collections"));
+            StackPanel.Children.Add(new MenuButton(new List<Command>(), "Local"));
 
             Label l = new();
             l.Content = "Please click one of the buttons above to get started";
@@ -44,6 +48,10 @@ namespace StlSpy
             MainContent.Children.Add(control);
         }
 
-        public void ChangeViewToSortType(ApiDescription api, SortType sort) => SetContent(new SortTypeView(api, sort));
+        public void ChangeViewToSortType(ApiDescription api, SortType sort)
+        {
+            SetContent(new SortTypeView(api, sort));
+            HeaderBackground.Background = api.GetColorAsBrush();
+        }
     }
 }

@@ -6,7 +6,7 @@
         x:Class="StlSpy.MainWindow"
         Title="StlSpy">
     <DockPanel>
-        <Panel Background="OrangeRed" Height="50" DockPanel.Dock="Top">
+        <Panel Background="OrangeRed" Height="50" DockPanel.Dock="Top" Name="HeaderBackground">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Name="StackPanel" />
         </Panel>
         <Panel Name="MainContent" />
