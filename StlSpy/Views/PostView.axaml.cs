@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using Avalonia;
 using Avalonia.Controls;
@@ -12,28 +13,23 @@ namespace StlSpy.Views
 {
     public partial class PostView : UserControlExt<PostView>
     {
-        private Post _post;
+        public Post Post { get; private set; }
         private int _imagePage = 0;
         private LocalStorage _storage = new();
-        public event Action<Post> OnDelete;
+        public event Action<PostView> OnInitialised; 
 
         [Binding(nameof(PostName), "Content")] 
-        public string PostNameText => _post.Name;
+        public string PostNameText => Post.Name;
 
         [Binding(nameof(PostAuthor), "Content")]
-        public string PostAuthorText => $"By {_post.Author.Name}, Published {_post.Added:MMMM dd, yyyy}";
+        public string PostAuthorText => $"By {Post.Author.Name}, Published {Post.Added:MMMM dd, yyyy}";
 
         [Binding(nameof(PostDescription), "Text")]
-        public string PostDescriptionText => _post.Description;
+        public string PostDescriptionText => Post.Description;
 
         [Binding(nameof(MainPanel), "IsVisible")]
-        public bool Visible => _post != null;
+        public bool Visible => Post != null;
 
-        public bool IsDownloaded => _storage.AreFilesCached(_post.UniversalId);
-
-        [Binding(nameof(DownloadButton), "Content")]
-        public string DownloadButtonText => IsDownloaded ? "Delete Files" : "Download Files";
-        
         public PostView()
         {
             InitializeComponent();
@@ -47,7 +43,7 @@ namespace StlSpy.Views
 
         public PostView(Post post) : this()
         {
-            _post = post;
+            Post = post;
         }
 
         public async void GetPost(string uid)
@@ -55,7 +51,7 @@ namespace StlSpy.Views
             Post? post = await UnifiedPrintApi.PostsUniversalId(uid);
             if (post != null)
             {
-                _post = post;
+                Post = post;
                 Init();
             }
         }
@@ -65,13 +61,26 @@ namespace StlSpy.Views
             UpdateView();
             DownloadAuthorImage();
             DownloadPostImage();
+            OnInitialised?.Invoke(this);
+        }
+
+        public void SetCustomisableButtons(List<IControl> controls)
+        {
+            CustomisableButtons.Children.Clear();
+            CustomisableButtons.Children.AddRange(controls);
+            SetCustomisableButtonsStatus(true);
+        }
+
+        public void SetCustomisableButtonsStatus(bool enabled)
+        {
+            CustomisableButtons.IsEnabled = enabled;
         }
         
         public async void DownloadAuthorImage()
         {
             try
             {
-                byte[]? data = await _post.Author.Thumbnail.Get();
+                byte[]? data = await Post.Author.Thumbnail.Get();
                 if (data != null)
                 {
                     Stream stream = new MemoryStream(data);
@@ -88,7 +97,7 @@ namespace StlSpy.Views
         {
             try
             {
-                byte[]? data = await _post.Images[_imagePage].Get();
+                byte[]? data = await Post.Images[_imagePage].Get();
                 if (data != null)
                 {
                     Stream stream = new MemoryStream(data);
@@ -102,17 +111,17 @@ namespace StlSpy.Views
         }
 
         [Command(nameof(PostName))]
-        public void OpenPostUrl() => Utils.Utils.OpenUrl(_post.Website);
+        public void OpenPostUrl() => Utils.Utils.OpenUrl(Post.Website);
         
         [Command(nameof(PostAuthor))]
-        public void OpenPostAuthorUrl() => Utils.Utils.OpenUrl(_post.Author.Website);
+        public void OpenPostAuthorUrl() => Utils.Utils.OpenUrl(Post.Author.Website);
 
         [Command(nameof(LeftImageButton))]
         public void PreviousImagePage()
         {
             _imagePage--;
             if (_imagePage < 0)
-                _imagePage = _post.Images.Count - 1;
+                _imagePage = Post.Images.Count - 1;
             DownloadPostImage();
         }
 
@@ -120,25 +129,8 @@ namespace StlSpy.Views
         public void NextImagePage()
         {
             _imagePage++;
-            _imagePage %= _post.Images.Count;
+            _imagePage %= Post.Images.Count;
             DownloadPostImage();
         }
-
-        [Command(nameof(DownloadButton))]
-        public async void Download()
-        {
-            DownloadButton.IsEnabled = false;
-
-            if (IsDownloaded)
-            {
-                _storage.DeleteLocalPost(_post.UniversalId);
-                OnDelete?.Invoke(_post);
-            }
-            else
-                await _storage.GetFilesPath(_post);
-            
-            DownloadButton.IsEnabled = true;
-            UpdateView();
-        } 
     }
 }

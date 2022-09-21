@@ -8,6 +8,7 @@ using Avalonia.Media;
 using StlSpy.Extensions;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
+using StlSpy.Utils;
 
 namespace StlSpy.Views
 {
@@ -18,6 +19,8 @@ namespace StlSpy.Views
         private PreviewPostCollectionView _view;
         private int _page = 1;
         private int _perPage = 20;
+        private LocalStorage _storage = new();
+        private PostView? _postView;
 
         public SortTypeView(ApiDescription apiDescription, SortType sortType)
         {
@@ -28,7 +31,9 @@ namespace StlSpy.Views
             _view = new();
             _view.OnNewSelection += x =>
             {
-                SetControl(new PostView(x.Post.UniversalId));
+                _postView = new PostView(x.Post.UniversalId);
+                _postView.OnInitialised += RespondToButtonRefresh;
+                SetControl(_postView);
             };
             VerticalStackPanel.Children.Add(_view);
             Get();
@@ -37,6 +42,20 @@ namespace StlSpy.Views
         public SortTypeView()
         {
             InitializeComponent();
+        }
+
+        private void SetButtonsOnPostView()
+        {
+            _postView?.SetCustomisableButtons(new()
+            {
+                Buttons.DownloadButton(_postView, _storage, RespondToButtonRefresh)
+            });
+        }
+
+        private void RespondToButtonRefresh(PostView post)
+        {
+            if (post == _postView)
+                SetButtonsOnPostView();
         }
 
         private async void Get()

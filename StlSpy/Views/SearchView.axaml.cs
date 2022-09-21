@@ -8,6 +8,7 @@ using Avalonia.Media;
 using StlSpy.Extensions;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
+using StlSpy.Utils;
 
 namespace StlSpy.Views
 {
@@ -18,6 +19,8 @@ namespace StlSpy.Views
         private int _perPage = 20;
         private PreviewPostCollectionView _view;
         private string? _query;
+        private LocalStorage _storage = new();
+        private PostView? _postView;
         
         public SearchView()
         {
@@ -31,7 +34,9 @@ namespace StlSpy.Views
             _view = new();
             _view.OnNewSelection += x =>
             {
-                SetControl(new PostView(x.Post.UniversalId));
+                _postView = new PostView(x.Post.UniversalId);
+                _postView.OnInitialised += RespondToButtonRefresh;
+                SetControl(_postView);
             };
             VerticalStackPanel.Children.Add(_view);
             SearchButton.Background = _api.GetColorAsBrush();
@@ -50,6 +55,20 @@ namespace StlSpy.Views
                 _view.SetText("");
                 Page.IsVisible = RightArrow.IsVisible = LeftArrow.IsVisible = false;
             }
+        }
+        
+        private void SetButtonsOnPostView()
+        {
+            _postView?.SetCustomisableButtons(new()
+            {
+                Buttons.DownloadButton(_postView, _storage, RespondToButtonRefresh)
+            });
+        }
+
+        private void RespondToButtonRefresh(PostView post)
+        {
+            if (post == _postView)
+                SetButtonsOnPostView();
         }
 
         public void SetControl(IControl control)
