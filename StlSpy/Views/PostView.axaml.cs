@@ -14,6 +14,8 @@ namespace StlSpy.Views
     {
         private Post _post;
         private int _imagePage = 0;
+        private LocalStorage _storage = new();
+        public event Action<Post> OnDelete;
 
         [Binding(nameof(PostName), "Content")] 
         public string PostNameText => _post.Name;
@@ -26,6 +28,11 @@ namespace StlSpy.Views
 
         [Binding(nameof(MainPanel), "IsVisible")]
         public bool Visible => _post != null;
+
+        public bool IsDownloaded => _storage.AreFilesCached(_post.UniversalId);
+
+        [Binding(nameof(DownloadButton), "Content")]
+        public string DownloadButtonText => IsDownloaded ? "Delete Files" : "Download Files";
         
         public PostView()
         {
@@ -116,5 +123,22 @@ namespace StlSpy.Views
             _imagePage %= _post.Images.Count;
             DownloadPostImage();
         }
+
+        [Command(nameof(DownloadButton))]
+        public async void Download()
+        {
+            DownloadButton.IsEnabled = false;
+
+            if (IsDownloaded)
+            {
+                _storage.DeleteLocalPost(_post.UniversalId);
+                OnDelete?.Invoke(_post);
+            }
+            else
+                await _storage.GetFilesPath(_post);
+            
+            DownloadButton.IsEnabled = true;
+            UpdateView();
+        } 
     }
 }
