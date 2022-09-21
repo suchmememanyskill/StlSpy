@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,9 +11,12 @@ namespace StlSpy.Views
 {
     public partial class PreviewPostCollectionView : UserControl
     {
+        public event Action<PreviewPostView>? OnNewSelection;
+        
         public PreviewPostCollectionView()
         {
             InitializeComponent();
+            List.SelectionChanged += List_SelectionChanged;
         }
 
         public void SetText(string text)
@@ -37,6 +41,14 @@ namespace StlSpy.Views
         {
             SetText("Loading...");
             SetPosts(await postsTask);
+        }
+
+        private void List_SelectionChanged(object? sender, SelectionChangedEventArgs e)
+        {
+            PreviewPostView? view = List.SelectedItem as PreviewPostView;
+            
+            if (view != null)
+                OnNewSelection?.Invoke(view);
         }
     }
 }

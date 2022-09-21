@@ -4,5 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="StlSpy.Views.PostView">
-  Welcome to Avalonia!
+    <Border Margin="5" CornerRadius="5" Background="#202020" Width="800" Padding="5">
+        <Panel>
+            <StackPanel>
+                <Button Name="PostName" Classes="invisible url" Padding="5,5,5,0" FontSize="20" />
+                <Button Name="PostAuthor" Classes="invisible url" Padding="5,0" FontSize="16" />
+            </StackPanel>
+        </Panel>
+    </Border>
 </UserControl>

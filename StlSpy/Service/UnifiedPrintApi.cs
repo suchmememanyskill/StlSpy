@@ -33,4 +33,17 @@ public class UnifiedPrintApi
         return JsonConvert.DeserializeObject<PreviewPostsCollection>(
             await Request.GetStringAsync(new Uri($"{SITE}/Posts/list/{apiName}/search?{parameters}")))!;
     }
+
+    public static async Task<Post?> PostsUniversalId(string uid)
+    {
+        try
+        {
+            return JsonConvert.DeserializeObject<Post>(
+                await Request.GetStringAsync(new Uri($"{SITE}/Posts/universal/{uid}")))!;
+        }
+        catch
+        {
+            return null;
+        }
+    }
 }

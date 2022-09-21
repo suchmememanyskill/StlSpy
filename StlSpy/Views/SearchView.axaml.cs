@@ -29,6 +29,10 @@ namespace StlSpy.Views
         {
             _api = api;
             _view = new();
+            _view.OnNewSelection += x =>
+            {
+                SetControl(new PostView(x.Post.UniversalId));
+            };
             VerticalStackPanel.Children.Add(_view);
             SearchButton.Background = _api.GetColorAsBrush();
             Get();
@@ -46,6 +50,12 @@ namespace StlSpy.Views
                 _view.SetText("");
                 Page.IsVisible = RightArrow.IsVisible = LeftArrow.IsVisible = false;
             }
+        }
+
+        public void SetControl(IControl control)
+        {
+            SidePanel.Children.Clear();
+            SidePanel.Children.Add(control);
         }
 
         private async Task<List<PreviewPostView>> GetPosts()

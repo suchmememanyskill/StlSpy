@@ -4,19 +4,22 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="StlSpy.Views.SearchView">
-    <ScrollViewer>
-        <StackPanel Name="VerticalStackPanel" Spacing="10" Margin="10">
-            <StackPanel Name="Header" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
-                <TextBox Width="200" Watermark="Enter search query here" Name="SearchBox" />
-                <Button Content="Search" Margin="0,0,30,0" Name="SearchButton" IsDefault="True"/>
-                <Button Name="LeftArrow" Padding="6,0">
-                    <Label FontSize="20" Padding="0" VerticalAlignment="Center">&lt;</Label>
-                </Button>
-                <Label Name="Page" FontSize="18" />
-                <Button Name="RightArrow" Padding="6,0">
-                    <Label FontSize="20" Padding="0" VerticalAlignment="Center">&gt;</Label>
-                </Button>
+    <DockPanel>
+        <Panel DockPanel.Dock="Right" Name="SidePanel" />
+        <ScrollViewer>
+            <StackPanel Name="VerticalStackPanel" Spacing="10" Margin="10">
+                <StackPanel Name="Header" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
+                    <TextBox Width="200" Watermark="Enter search query here" Name="SearchBox" />
+                    <Button Content="Search" Margin="0,0,30,0" Name="SearchButton" IsDefault="True"/>
+                    <Button Name="LeftArrow" Padding="6,0">
+                        <Label FontSize="20" Padding="0" VerticalAlignment="Center">&lt;</Label>
+                    </Button>
+                    <Label Name="Page" FontSize="18" />
+                    <Button Name="RightArrow" Padding="6,0">
+                        <Label FontSize="20" Padding="0" VerticalAlignment="Center">&gt;</Label>
+                    </Button>
+                </StackPanel>
             </StackPanel>
-        </StackPanel>
-    </ScrollViewer>
+        </ScrollViewer>
+    </DockPanel>
 </UserControl>

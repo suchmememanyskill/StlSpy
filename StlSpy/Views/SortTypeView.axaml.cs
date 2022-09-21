@@ -26,6 +26,10 @@ namespace StlSpy.Views
             InitializeComponent();
             SetControls();
             _view = new();
+            _view.OnNewSelection += x =>
+            {
+                SetControl(new PostView(x.Post.UniversalId));
+            };
             VerticalStackPanel.Children.Add(_view);
             Get();
         }
@@ -73,6 +77,12 @@ namespace StlSpy.Views
         {
             _page++;
             Get();
+        }
+        
+        public void SetControl(IControl control)
+        {
+            SidePanel.Children.Clear();
+            SidePanel.Children.Add(control);
         }
 
         public string MainText() => _api.Name;
