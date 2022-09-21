@@ -7,6 +7,10 @@
         Title="StlSpy">
     <DockPanel>
         <Panel Background="OrangeRed" Height="50" DockPanel.Dock="Top" Name="HeaderBackground">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10,0">
+                <Label Name="MainText" FontWeight="Bold" FontSize="20" Content="StlSpy" />
+                <Label Name="SubText" FontSize="20" />
+            </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Name="StackPanel" />
         </Panel>
         <Panel Name="MainContent" />

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Avalonia.Controls;
 using Avalonia.Layout;
+using Avalonia.Media;
 using StlSpy.Extensions;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
@@ -23,14 +24,18 @@ namespace StlSpy
         {
             _apis = await UnifiedPrintApi.PostsServices();
 
-            MenuButton menuButton = new(_apis.Select(x =>
+            MenuButton sites = new(_apis.Select(x =>
             {
                 return new Command(x.Name, x.SortTypes.Select(y => new Command(y.DisplayName, () => ChangeViewToSortType(x, y))).ToList());
             }), "Sites");
             
-            StackPanel.Children.Add(menuButton);
+            StackPanel.Children.Add(sites);
+
+            MenuButton search = 
+                new(_apis.Select(x => new Command(x.Name, () => ChangeViewToSearchType(x))), "Search");
             
-            StackPanel.Children.Add(new MenuButton(new List<Command>(), "Search"));
+            StackPanel.Children.Add(search);
+            
             StackPanel.Children.Add(new MenuButton(new List<Command>(), "Collections"));
             StackPanel.Children.Add(new MenuButton(new List<Command>(), "Local"));
 
@@ -48,10 +53,25 @@ namespace StlSpy
             MainContent.Children.Add(control);
         }
 
+        public void SetView(IMainView view)
+        {
+            SetContent(view);
+            IBrush? brush = view.HeaderColor();
+            if (brush != null)
+                HeaderBackground.Background = brush;
+
+            MainText.Content = view.MainText();
+            SubText.Content = view.SubText();
+        }
+
         public void ChangeViewToSortType(ApiDescription api, SortType sort)
         {
-            SetContent(new SortTypeView(api, sort));
-            HeaderBackground.Background = api.GetColorAsBrush();
+            SetView(new SortTypeView(api, sort));
+        }
+
+        public void ChangeViewToSearchType(ApiDescription api)
+        {
+            SetView(new SearchView(api));
         }
     }
 }

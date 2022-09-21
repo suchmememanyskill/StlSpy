@@ -23,4 +23,14 @@ public class UnifiedPrintApi
         return JsonConvert.DeserializeObject<PreviewPostsCollection>(
             await Request.GetStringAsync(new Uri($"{SITE}/Posts/list/{apiName}/{sortType}?{parameters}")))!;
     }
+
+    public static async Task<PreviewPostsCollection> PostsSearch(string apiName, string query, int page = 1, int perPage = 20)
+    {
+        var parameters = HttpUtility.ParseQueryString(string.Empty);
+        parameters["page"] = page.ToString();
+        parameters["perPage"] = perPage.ToString();
+        parameters["query"] = query;
+        return JsonConvert.DeserializeObject<PreviewPostsCollection>(
+            await Request.GetStringAsync(new Uri($"{SITE}/Posts/list/{apiName}/search?{parameters}")))!;
+    }
 }

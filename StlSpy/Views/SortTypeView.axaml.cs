@@ -4,19 +4,20 @@ using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
+using Avalonia.Media;
 using StlSpy.Extensions;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 
 namespace StlSpy.Views
 {
-    public partial class SortTypeView : UserControlExt<SortTypeView>
+    public partial class SortTypeView : UserControlExt<SortTypeView>, IMainView
     {
         private ApiDescription _api;
         private SortType _sort;
         private PreviewPostCollectionView _view;
-        private int page = 1;
-        private int perPage = 20;
+        private int _page = 1;
+        private int _perPage = 20;
 
         public SortTypeView(ApiDescription apiDescription, SortType sortType)
         {
@@ -36,7 +37,6 @@ namespace StlSpy.Views
 
         private async void Get()
         {
-            SortTypeLabel.Content = $"On {_api.Name}, Sorting {_sort.DisplayName}";
             _view.SetPosts(GetPosts());
         }
 
@@ -44,35 +44,39 @@ namespace StlSpy.Views
         {
             LeftArrow.IsEnabled = false;
             RightArrow.IsEnabled = false;
-            PreviewPostsCollection collection = await UnifiedPrintApi.PostsList(_api.Slug, _sort.UriName, page, perPage);
+            PreviewPostsCollection collection = await UnifiedPrintApi.PostsList(_api.Slug, _sort.UriName, _page, _perPage);
             if (collection.TotalResults >= 0)
             {
-                long totalPages = collection.TotalResults / perPage;
-                RightArrow.IsEnabled = totalPages > page;
-                Page.Content = $"Page {page}/{totalPages}";
+                long totalPages = (collection.TotalResults + _perPage - 1) / _perPage;
+                RightArrow.IsEnabled = totalPages > _page;
+                Page.Content = $"Page {_page}/{totalPages}";
             }
             else
             {
-                Page.Content = $"Page {page}";
+                Page.Content = $"Page {_page}";
                 RightArrow.IsEnabled = collection.PreviewPosts.Count != 0;
             }
             
-            LeftArrow.IsEnabled = (page > 1);
+            LeftArrow.IsEnabled = (_page > 1);
             return collection.PreviewPosts.Select(x => new PreviewPostView(x, _api)).ToList();
         }
 
         [Command(nameof(LeftArrow))]
         public void OnLeftArrow()
         {
-            page--;
+            _page--;
             Get();
         }
         
         [Command(nameof(RightArrow))]
         public void OnRightArrow()
         {
-            page++;
+            _page++;
             Get();
         }
+
+        public string MainText() => _api.Name;
+        public string SubText() => _sort.DisplayName;
+        public IBrush? HeaderColor() => _api.GetColorAsBrush();
     }
 }
