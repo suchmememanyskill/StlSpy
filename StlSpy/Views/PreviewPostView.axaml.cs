@@ -27,7 +27,7 @@ namespace StlSpy.Views
         {
             try
             {
-                byte[]? data = await Request.GetAsync(Post.Thumbnail);
+                byte[]? data = await Post.Thumbnail.Get();
                 if (data != null)
                 {
                     Stream stream = new MemoryStream(data);

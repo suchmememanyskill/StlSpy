@@ -4,12 +4,34 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="StlSpy.Views.PostView">
-    <Border Margin="5" CornerRadius="5" Background="#202020" Width="800" Padding="5">
-        <Panel>
-            <StackPanel>
-                <Button Name="PostName" Classes="invisible url" Padding="5,5,5,0" FontSize="20" />
-                <Button Name="PostAuthor" Classes="invisible url" Padding="5,0" FontSize="16" />
-            </StackPanel>
-        </Panel>
-    </Border>
+    <ScrollViewer>
+        <Border Margin="5" CornerRadius="5" Background="#202020" Width="800" Padding="5">
+            <Panel Name="MainPanel" IsVisible="False">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                        <Image Name="AuthorImage" Height="50" Width="50" />
+                        <StackPanel>
+                            <Button Name="PostName" Classes="invisible url" Padding="5,0" FontSize="20" />
+                            <Button Name="PostAuthor" Classes="invisible url" Padding="5,0" FontSize="16" />
+                        </StackPanel>
+                    </StackPanel>
+                
+                    <Panel Width="790">
+                        <Image MaxHeight="790" Width="790" Name="MainImage" />
+                        <Button Classes="darker" FontSize="25" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10" Name="LeftImageButton">&lt;</Button>
+                        <Button Classes="darker" FontSize="25" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10" Name="RightImageButton">&gt;</Button>
+                    </Panel>
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                        <Button>Button1</Button>
+                        <Button>Button2</Button>
+                        <Button>Button3</Button>
+                        <Button>Button4</Button>
+                    </StackPanel>
+                    
+                    <TextBlock FontSize="14" Name="PostDescription" TextWrapping="WrapWithOverflow" />
+                </StackPanel>
+            </Panel>
+        </Border>
+    </ScrollViewer>
 </UserControl>

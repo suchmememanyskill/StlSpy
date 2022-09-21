@@ -10,7 +10,7 @@
             <StackPanel Name="VerticalStackPanel" Spacing="10" Margin="10">
                 <StackPanel Name="Header" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10">
                     <TextBox Width="200" Watermark="Enter search query here" Name="SearchBox" />
-                    <Button Content="Search" Margin="0,0,30,0" Name="SearchButton" IsDefault="True"/>
+                    <Button Content="Search" Margin="0,0,10,0" Name="SearchButton" IsDefault="True"/>
                     <Button Name="LeftArrow" Padding="6,0">
                         <Label FontSize="20" Padding="0" VerticalAlignment="Center">&lt;</Label>
                     </Button>
