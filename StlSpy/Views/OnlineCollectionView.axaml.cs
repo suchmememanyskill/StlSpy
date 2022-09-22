@@ -13,43 +13,34 @@ using StlSpy.Utils;
 
 namespace StlSpy.Views
 {
-    public partial class LocalCollectionView : UserControlExt<LocalCollectionView>, IMainView
+    public partial class OnlineCollectionView : UserControlExt<OnlineCollectionView>, IMainView
     {
         private string _collectionName;
+        private string _token;
         private PreviewPostCollectionView _view;
         private PostView? _postView;
 
         public event Action? ReloadTopBar;
 
-        [Binding(nameof(DeleteCollection), "Content")]
-        public string DeleteButtonLabel => $"Remove Collection '{_collectionName}'";
-
-        public LocalCollectionView(string collectionName) : this()
+        public OnlineCollectionView(string collectionName, string token) : this()
         {
             _collectionName = collectionName;
+            _token = token;
             SetControls();
             UpdateView();
             _view = new();
             _view.OnNewSelection += x =>
             {
-                if (x.Post is Post p)
-                {
-                    _postView = new PostView(p);
-                    RespondToButtonRefresh(_postView);
-                }
-                else
-                    _postView = new PostView(x.Post.UniversalId);
+                _postView = new PostView(x.Post.UniversalId);
                 
                 _postView.OnInitialised += RespondToButtonRefresh;
                 SetControl(_postView);
             };
             VerticalStackPanel.Children.Add(_view);
             Get();
-
-            DeleteCollection.IsVisible = collectionName != "Downloads";
         }
 
-        public LocalCollectionView()
+        public OnlineCollectionView()
         {
             InitializeComponent();
         }
@@ -73,8 +64,8 @@ namespace StlSpy.Views
         {
             _postView?.SetCustomisableButtonsStatus(false);
 
-            LocalStorage storage = LocalStorage.Get();
-            await storage.RemoveFromCollection(_collectionName, _postView?.Post.UniversalId ?? "");
+            OnlineStorage storage = OnlineStorage.Get();
+            await storage.RemoveFromCollection(_token, _postView?.Post.UniversalId ?? "");
             
             SetControl(null);
             Get();
@@ -93,8 +84,8 @@ namespace StlSpy.Views
 
         private async Task<List<PreviewPostView>> GetPosts()
         {
-            LocalStorage storage = LocalStorage.Get();
-            return (await storage.GetLocalPosts(_collectionName)).Select(x => new PreviewPostView(x, ApiDescription.GetLocalApiDescription())).ToList();
+            OnlineStorage storage = OnlineStorage.Get();
+            return (await storage.GetPosts(_token)).Select(x => new PreviewPostView(x, ApiDescription.GetLocalApiDescription())).ToList();
         }
         
         public void SetControl(IControl? control)
@@ -104,38 +95,10 @@ namespace StlSpy.Views
                 SidePanel.Children.Add(control);
         }
 
-        public string MainText() => "Local";
+        public string MainText() => "Online";
 
         public string SubText() => _collectionName;
 
         public IBrush? HeaderColor() => ApiDescription.GetLocalApiDescription().GetColorAsBrush();
-
-        [Command(nameof(DeleteCollection))]
-        public async void Delete()
-        {
-            _view.SetText($"Removing {_collectionName}...");
-            SetControl(null);
-            DeleteCollection.IsVisible = false;
-
-            LocalStorage storage = LocalStorage.Get();
-            List<Post>? posts = await storage.GetLocalPosts(_collectionName);
-
-            if (posts == null)
-            {
-                _view.SetText($"Failed to remove {_collectionName}...");
-                return;
-            }
-
-            await storage.RemoveCollection(_collectionName);
-            
-            foreach (var post in posts)
-            {
-                if (!await storage.IsPartOfAnyCollection(post.UniversalId))
-                    await storage.DeleteLocalPost(post.UniversalId);
-            }
-
-            _view.SetText($"Removed {_collectionName}");
-            ReloadTopBar?.Invoke();
-        }
     }
 }

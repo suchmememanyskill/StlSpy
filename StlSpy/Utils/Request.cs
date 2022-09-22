@@ -67,5 +67,14 @@ namespace StlSpy.Utils
                 return await client.UploadStringTaskAsync(uri, data);
             }
         }
+        
+        public static async Task<string> DeleteStringAsync(Uri uri, string data)
+        {
+            using (var client = new WebClient())
+            {
+                client.Headers["Content-Type"] = "application/json";
+                return await client.UploadStringTaskAsync(uri, "DELETE", data);
+            }
+        }
     }
 }

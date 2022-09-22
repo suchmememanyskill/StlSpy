@@ -43,6 +43,7 @@ namespace StlSpy.Views
         public PostView(Post post) : this()
         {
             Post = post;
+            Init();
         }
 
         public async void GetPost(string uid)

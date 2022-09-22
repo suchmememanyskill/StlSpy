@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using StlSpy.Model.PostsEndpoint;
 
 namespace StlSpy.Model;
 
@@ -18,4 +19,10 @@ public class Collection
     {
         Name = name;
     }
+}
+
+public class OnlineCollection
+{
+    public string CollectionName { get; set; }
+    public List<Post> Posts { get; set; }
 }

@@ -38,9 +38,10 @@ namespace StlSpy
         {
             StackPanel.Children.Clear();
             
-            LocalStorage storage = LocalStorage.Get();
-            if (!(await storage.GetCollectionNames()).Contains("Downloads"))
-                await storage.CreateCollection("Downloads");
+            LocalStorage localStorage = LocalStorage.Get();
+            OnlineStorage onlineStorage = OnlineStorage.Get();
+            if (!(await localStorage.GetCollectionNames()).Contains("Downloads"))
+                await localStorage.CreateCollection("Downloads");
 
             _apis = await UnifiedPrintApi.PostsServices();
 
@@ -56,17 +57,22 @@ namespace StlSpy
             
             StackPanel.Children.Add(search);
 
-            List<Command> localCollectionItems = (await storage.GetCollectionNames())
-                .Select(x => new Command(x, () => ChangeViewToLocalCollectionsType(x))).ToList();
+            List<Command> onlineCollectionItems = (await onlineStorage.GetCollections())
+                .Select(x => new Command(x.Value, () => ChangeViewToOnlineCollectionsType(x.Value, x.Key))).ToList();
+
+            onlineCollectionItems.Add(new());
+            onlineCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(OnNewOnlineCollection)));
+            onlineCollectionItems.Add(new("Import Collection"));
             
+            StackPanel.Children.Add(new MenuButton(onlineCollectionItems, "Online Collections"));
+            
+            List<Command> localCollectionItems = (await localStorage.GetCollectionNames())
+                .Select(x => new Command(x, () => ChangeViewToLocalCollectionsType(x))).ToList();
             
             localCollectionItems.Add(new());
             localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(OnNewLocalCollection)));
-
-            MenuButton localCollections = new(localCollectionItems, "Local Collections");
             
-            StackPanel.Children.Add(new MenuButton(new List<Command>(), "Collections"));
-            StackPanel.Children.Add(localCollections);
+            StackPanel.Children.Add(new MenuButton(localCollectionItems, "Local Collections"));
         }
 
         public void SetContent(IControl control)
@@ -102,6 +108,13 @@ namespace StlSpy
             x.ReloadTopBar += SetTopButtons;
             SetView(x);
         }
+        
+        public void ChangeViewToOnlineCollectionsType(string name, string token)
+        {
+            var x = new OnlineCollectionView(name, token);
+            x.ReloadTopBar += SetTopButtons;
+            SetView(x);
+        }
 
         public void ChangeViewToNewCollectionView(Func<string, Task<string?>> onSubmit)
         {
@@ -119,6 +132,16 @@ namespace StlSpy
             await storage.CreateCollection(collectionName);
             SetTopButtons();
             ChangeViewToLocalCollectionsType(collectionName);
+            return null;
+        }
+        
+        public async Task<string?> OnNewOnlineCollection(string collectionName)
+        {
+            OnlineStorage storage = OnlineStorage.Get();
+
+            string token = await storage.CreateCollection(collectionName);
+            SetTopButtons();
+            ChangeViewToOnlineCollectionsType(collectionName, token);
             return null;
         }
     }

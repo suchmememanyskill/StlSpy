@@ -35,7 +35,7 @@ public static class Buttons
     }
 
     public static Button OpenPrusaSlicerButton(PostView postView, Action<PostView>? onCompletion = null)
-        => CreateButton("Open in PrusaSlicer", () => HandleOpenPrusaSlicerButton(postView, onCompletion));
+        => CreateButton("Open PrusaSlicer", () => HandleOpenPrusaSlicerButton(postView, onCompletion));
 
     private static async void HandleOpenPrusaSlicerButton(PostView postView, Action<PostView>? onCompletion = null)
     {
@@ -54,7 +54,7 @@ public static class Buttons
     }
     
     public static Button OpenFolder(PostView postView, Action<PostView>? onCompletion = null)
-        => CreateButton("Open in Explorer", () => HandleOpenFolder(postView, onCompletion));
+        => CreateButton("Open Explorer", () => HandleOpenFolder(postView, onCompletion));
 
     private static async void HandleOpenFolder(PostView postView, Action<PostView>? onCompletion = null)
     {
@@ -70,6 +70,40 @@ public static class Buttons
         onCompletion?.Invoke(postView);
     }
 
+    public static async Task<MenuButton> AddToOnlineCollection(PostView postView, Action<PostView>? onCompletion = null)
+    {
+        OnlineStorage storage = OnlineStorage.Get();
+        Dictionary<string, string> availableCollections = await storage.GetCollections();
+        List<(string,string, bool)> convertedCollections = new();
+
+        foreach (var x in availableCollections)
+        {
+            convertedCollections.Add((x.Key, x.Value, await storage.IsPostPartOfCollection(x.Key, postView.Post.UniversalId)));
+        }
+
+        MenuButton button =
+            new(
+                convertedCollections.Select(x =>
+                    (!x.Item3)
+                        ? new Command(x.Item2, () => HandleAddToOnlineCollection(postView, x.Item1, onCompletion))
+                        : new Command(x.Item1)), "Add to Online Collection");
+
+        button.SetFontSize(14);
+        button.IsEnabled = availableCollections.Count > 0 && convertedCollections.Any(x => !x.Item3);
+        return button;
+    }
+    
+    private static async void HandleAddToOnlineCollection(PostView postView, string token,
+        Action<PostView>? onCompletion = null)
+    {
+        postView.SetCustomisableButtonsStatus(false);
+        
+        OnlineStorage storage = OnlineStorage.Get();
+        await storage.AddPost(token, postView.Post.UniversalId);
+        
+        onCompletion?.Invoke(postView);
+    }
+    
     public static async Task<MenuButton> AddToLocalCollection(PostView postView, Action<PostView>? onCompletion = null)
     {
         LocalStorage storage = LocalStorage.Get();
@@ -90,6 +124,7 @@ public static class Buttons
                         : new Command(x.Item1)), "Add to Local Collection");
 
         button.SetFontSize(14);
+        button.IsEnabled = availableCollections.Count > 0 && convertedCollections.Any(x => !x.Item2);
         return button;
     }
 
