@@ -131,5 +131,11 @@ namespace StlSpy.Views
             _imagePage %= Post.Images.Count;
             DownloadPostImage();
         }
+
+        [Command(nameof(CloseButton))]
+        public void Close()
+        {
+            TopElement.IsVisible = false;
+        }
     }
 }
