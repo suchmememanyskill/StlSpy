@@ -7,7 +7,11 @@
     <DockPanel>
         <Panel DockPanel.Dock="Right" Name="SidePanel" />
         <ScrollViewer>
-            <StackPanel Name="VerticalStackPanel" Spacing="10" Margin="10" />
+            <StackPanel Name="VerticalStackPanel" Spacing="10" Margin="10">
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                    <Button Name="DeleteCollection" />
+                </StackPanel>
+            </StackPanel>
         </ScrollViewer>
     </DockPanel>
 </UserControl>

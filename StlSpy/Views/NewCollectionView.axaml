@@ -1,0 +1,14 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="StlSpy.Views.NewCollectionView">
+  <StackPanel HorizontalAlignment="Center" Spacing="10" Margin="20">
+      <StackPanel Orientation="Horizontal" VerticalAlignment="Top" Spacing="10">
+          <TextBox Watermark="Enter Collection Name here" Name="CollectionName" Width="400" />
+          <Button Name="Submit" Content="Add Collection" IsDefault="True" />
+      </StackPanel>
+      <Label Foreground="Red" Name="ErrorText" HorizontalAlignment="Center" />
+  </StackPanel>
+</UserControl>

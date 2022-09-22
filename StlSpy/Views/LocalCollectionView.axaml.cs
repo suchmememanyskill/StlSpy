@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -5,22 +6,29 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using StlSpy.Extensions;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 using StlSpy.Utils;
 
 namespace StlSpy.Views
 {
-    public partial class LocalCollectionView : UserControl, IMainView
+    public partial class LocalCollectionView : UserControlExt<LocalCollectionView>, IMainView
     {
         private string _collectionName;
         private PreviewPostCollectionView _view;
         private PostView? _postView;
 
-        public LocalCollectionView(string collectionName)
+        public event Action? ReloadTopBar;
+
+        [Binding(nameof(DeleteCollection), "Content")]
+        public string DeleteButtonLabel => $"Remove Collection '{_collectionName}'";
+
+        public LocalCollectionView(string collectionName) : this()
         {
             _collectionName = collectionName;
-            InitializeComponent();
+            SetControls();
+            UpdateView();
             _view = new();
             _view.OnNewSelection += x =>
             {
@@ -30,6 +38,8 @@ namespace StlSpy.Views
             };
             VerticalStackPanel.Children.Add(_view);
             Get();
+
+            DeleteCollection.IsVisible = collectionName != "Downloads";
         }
 
         public LocalCollectionView()
@@ -90,5 +100,33 @@ namespace StlSpy.Views
         public string SubText() => _collectionName;
 
         public IBrush? HeaderColor() => ApiDescription.GetLocalApiDescription().GetColorAsBrush();
+
+        [Command(nameof(DeleteCollection))]
+        public async void Delete()
+        {
+            _view.SetText($"Removing {_collectionName}...");
+            SetControl(null);
+            DeleteCollection.IsVisible = false;
+
+            LocalStorage storage = LocalStorage.Get();
+            List<Post>? posts = await storage.GetLocalPosts(_collectionName);
+
+            if (posts == null)
+            {
+                _view.SetText($"Failed to remove {_collectionName}...");
+                return;
+            }
+
+            await storage.RemoveCollection(_collectionName);
+            
+            foreach (var post in posts)
+            {
+                if (!await storage.IsPartOfAnyCollection(post.UniversalId))
+                    await storage.DeleteLocalPost(post.UniversalId);
+            }
+
+            _view.SetText($"Removed {_collectionName}");
+            ReloadTopBar?.Invoke();
+        }
     }
 }

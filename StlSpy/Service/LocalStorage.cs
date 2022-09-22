@@ -89,6 +89,8 @@ public class LocalStorage
         string dataPath = Path.Join(fullPath, "data.json");
         if (!File.Exists(dataPath))
             await File.WriteAllTextAsync(dataPath, JsonConvert.SerializeObject(local));
+        
+        await GetAllLocalPosts(true);
     }
 
     private async Task<Post?> LocalToPost(string dataPath)
@@ -230,7 +232,6 @@ public class LocalStorage
         if (!AreFilesCached(post.UniversalId))
         {
             await SavePostLocally(post);
-            await GetAllLocalPosts(true);
         }
         
         if (!collection.UIDs.Contains(post.UniversalId))
@@ -251,8 +252,17 @@ public class LocalStorage
         if (!await IsPartOfAnyCollection(uid))
         {
             await DeleteLocalPost(uid);
-            await GetAllLocalPosts(true);
         }
+        
+        await SaveLocalCollections();
+    }
+
+    public async Task RemoveCollection(string name)
+    {
+        CollectionHolder collections = await GetLocalCollections();
+        Collection? collection = collections.Collections.Find(x => x.Name == name);
+        if (collection != null)
+            collections.Collections.Remove(collection);
         
         await SaveLocalCollections();
     }

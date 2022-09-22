@@ -1,5 +1,7 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -22,6 +24,20 @@ namespace StlSpy
 
         public async void Init()
         {
+            SetTopButtons();
+
+            Label l = new();
+            l.Content = "Please click one of the buttons above to get started";
+            l.FontSize = 25;
+            l.HorizontalAlignment = HorizontalAlignment.Center;
+            l.VerticalAlignment = VerticalAlignment.Center;
+            SetContent(l);
+        }
+
+        public async void SetTopButtons()
+        {
+            StackPanel.Children.Clear();
+            
             LocalStorage storage = LocalStorage.Get();
             if (!(await storage.GetCollectionNames()).Contains("Downloads"))
                 await storage.CreateCollection("Downloads");
@@ -40,18 +56,17 @@ namespace StlSpy
             
             StackPanel.Children.Add(search);
 
-            MenuButton localCollections = new((await storage.GetCollectionNames()).Select(x => new Command(x, () => ChangeViewToLocalCollectionsType(x))),
-                "Local Collections");
+            List<Command> localCollectionItems = (await storage.GetCollectionNames())
+                .Select(x => new Command(x, () => ChangeViewToLocalCollectionsType(x))).ToList();
+            
+            
+            localCollectionItems.Add(new());
+            localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(OnNewLocalCollection)));
+
+            MenuButton localCollections = new(localCollectionItems, "Local Collections");
             
             StackPanel.Children.Add(new MenuButton(new List<Command>(), "Collections"));
             StackPanel.Children.Add(localCollections);
-
-            Label l = new();
-            l.Content = "Please click one of the buttons above to get started";
-            l.FontSize = 25;
-            l.HorizontalAlignment = HorizontalAlignment.Center;
-            l.VerticalAlignment = VerticalAlignment.Center;
-            SetContent(l);
         }
 
         public void SetContent(IControl control)
@@ -83,7 +98,28 @@ namespace StlSpy
 
         public void ChangeViewToLocalCollectionsType(string collection)
         {
-            SetView(new LocalCollectionView(collection));
+            var x = new LocalCollectionView(collection);
+            x.ReloadTopBar += SetTopButtons;
+            SetView(x);
+        }
+
+        public void ChangeViewToNewCollectionView(Func<string, Task<string?>> onSubmit)
+        {
+            SetView(new NewCollectionView(onSubmit));
+        }
+
+        public async Task<string?> OnNewLocalCollection(string collectionName)
+        {
+            LocalStorage storage = LocalStorage.Get();
+            if ((await storage.GetCollectionNames()).Contains(collectionName))
+            {
+                return "Collection already exists";
+            }
+
+            await storage.CreateCollection(collectionName);
+            SetTopButtons();
+            ChangeViewToLocalCollectionsType(collectionName);
+            return null;
         }
     }
 }
