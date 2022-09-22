@@ -22,6 +22,10 @@ namespace StlSpy
 
         public async void Init()
         {
+            LocalStorage storage = LocalStorage.Get();
+            if (!(await storage.GetCollectionNames()).Contains("Downloads"))
+                await storage.CreateCollection("Downloads");
+
             _apis = await UnifiedPrintApi.PostsServices();
 
             MenuButton sites = new(_apis.Select(x =>
@@ -35,9 +39,12 @@ namespace StlSpy
                 new(_apis.Select(x => new Command(x.Name, () => ChangeViewToSearchType(x))), "Search");
             
             StackPanel.Children.Add(search);
+
+            MenuButton localCollections = new((await storage.GetCollectionNames()).Select(x => new Command(x, () => ChangeViewToLocalCollectionsType(x))),
+                "Local Collections");
             
             StackPanel.Children.Add(new MenuButton(new List<Command>(), "Collections"));
-            StackPanel.Children.Add(new MenuButton(new List<Command>(), "Local"));
+            StackPanel.Children.Add(localCollections);
 
             Label l = new();
             l.Content = "Please click one of the buttons above to get started";
@@ -72,6 +79,11 @@ namespace StlSpy
         public void ChangeViewToSearchType(ApiDescription api)
         {
             SetView(new SearchView(api));
+        }
+
+        public void ChangeViewToLocalCollectionsType(string collection)
+        {
+            SetView(new LocalCollectionView(collection));
         }
     }
 }

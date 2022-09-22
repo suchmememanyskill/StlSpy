@@ -11,9 +11,15 @@ namespace StlSpy.Service;
 
 public class LocalStorage
 {
+    private static LocalStorage? instance;
     private string _basePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StlSpy");
+    private List<Post>? _localPosts;
+    private CollectionHolder? _localCollections;
 
-    public string GetPath(string uid)
+    private LocalStorage(){}
+    public static LocalStorage Get() => instance ??= new();
+    
+    private string GetPath(string uid)
     {
         string fullPath = Path.Join(_basePath, "Posts", uid.Replace(':', '_'));
         
@@ -63,7 +69,7 @@ public class LocalStorage
         return fullPath;
     }
 
-    public async Task SavePostLocally(Post post)
+    private async Task SavePostLocally(Post post)
     {
         string fullPath = GetPath(post.UniversalId);
 
@@ -85,7 +91,7 @@ public class LocalStorage
             await File.WriteAllTextAsync(dataPath, JsonConvert.SerializeObject(local));
     }
 
-    public async Task<Post?> LocalToPost(string dataPath)
+    private async Task<Post?> LocalToPost(string dataPath)
     {
         if (!File.Exists(dataPath))
             return null;
@@ -94,7 +100,7 @@ public class LocalStorage
         return LocalToPost(post);
     }
     
-    public Post LocalToPost(LocalPost local)
+    private Post LocalToPost(LocalPost local)
     {
         string fullPath = GetPath(local.UniversalId);
 
@@ -138,8 +144,11 @@ public class LocalStorage
         return post;
     }
 
-    public async Task<List<Post>> LoadAllLocalPosts()
+    public async Task<List<Post>> GetAllLocalPosts(bool force = false)
     {
+        if (_localPosts != null && !force)
+            return _localPosts;
+        
         string basePath = Path.Join(_basePath, "Posts");
 
         if (!Directory.Exists(basePath))
@@ -153,19 +162,34 @@ public class LocalStorage
             posts.Add(await LocalToPost(Path.Join(x, "data.json")));
         }
 
-        return posts.Where(x => x != null).Select(x => x!).ToList();
+        _localPosts = posts.Where(x => x != null).Select(x => x!).ToList();
+        return _localPosts;
     }
 
-    public async Task<CollectionHolder?> GetLocalCollections()
+    private async Task<CollectionHolder> GetLocalCollections()
     {
+        if (_localCollections != null)
+            return _localCollections;
+        
         string dataPath = Path.Join(_basePath, "local.json");
         if (!File.Exists(dataPath))
-            return null;
-
-        return JsonConvert.DeserializeObject<CollectionHolder>(await File.ReadAllTextAsync(dataPath));
+            _localCollections = new();
+        else
+            _localCollections = JsonConvert.DeserializeObject<CollectionHolder>(await File.ReadAllTextAsync(dataPath))!;
+        
+        return _localCollections;
     }
 
-    public async Task<List<Post>?> LoadPostsBasedOnCollection(string collection)
+    private async Task SaveLocalCollections()
+    {
+        if (_localCollections == null)
+            return;
+        
+        string dataPath = Path.Join(_basePath, "local.json");
+        await File.WriteAllTextAsync(dataPath, JsonConvert.SerializeObject(_localCollections));
+    }
+
+    public async Task<List<Post>?> GetLocalPosts(string collection)
     {
         CollectionHolder? collections = await GetLocalCollections();
         Collection? col = collections?.Collections.Find(x => x.Name == collection);
@@ -173,23 +197,81 @@ public class LocalStorage
         if (col == null)
             return null;
 
-        List<Post> posts = await LoadAllLocalPosts();
+        List<Post> posts = await GetAllLocalPosts();
         return posts.Where(x => col.UIDs.Contains(x.UniversalId)).ToList();
     }
 
-    public void DeleteLocalPost(string uid)
+    public async Task DeleteLocalPost(string uid)
     {
         string fullPath = GetPath(uid);
         Directory.Delete(fullPath, true);
+        await GetAllLocalPosts(true);
     }
 
     public async Task CreateCollection(string name)
     {
+        CollectionHolder collection = await GetLocalCollections();
+
+        if (collection.Collections.Any(x => x.Name == name))
+            throw new Exception("Collection already exists!");
         
+        collection.Collections.Add(new(name));
+        await SaveLocalCollections();
     }
 
-    public async Task AddToCollection(string name, string uid)
+    public async Task AddToCollection(string name, Post post)
     {
+        CollectionHolder collections = await GetLocalCollections();
+        Collection? collection = collections.Collections.Find(x => x.Name == name);
+
+        if (collection == null)
+            throw new Exception("Collection does not exist!");
+
+        if (!AreFilesCached(post.UniversalId))
+        {
+            await SavePostLocally(post);
+            await GetAllLocalPosts(true);
+        }
         
+        if (!collection.UIDs.Contains(post.UniversalId))
+            collection.UIDs.Add(post.UniversalId);
+        
+        await SaveLocalCollections();
+    }
+
+    public async Task RemoveFromCollection(string name, string uid)
+    {
+        CollectionHolder collections = await GetLocalCollections();
+        Collection? collection = collections.Collections.Find(x => x.Name == name);
+
+        if (collection == null)
+            throw new Exception("Collection does not exist!");
+
+        collection.UIDs.Remove(uid);
+        if (!await IsPartOfAnyCollection(uid))
+        {
+            await DeleteLocalPost(uid);
+            await GetAllLocalPosts(true);
+        }
+        
+        await SaveLocalCollections();
+    }
+
+    public async Task<bool> IsPartOfAnyCollection(string uid)
+    {
+        var collections = await GetLocalCollections();
+        return collections?.Collections.Any(x => x.UIDs.Contains(uid)) ?? false;
+    }
+
+    public async Task<bool> IsPartOfSpecificCollection(string collection, string uid)
+    {
+        var collections = await GetLocalCollections();
+        return collections?.Collections.Find(x => x.Name == collection)?.UIDs.Contains(uid) ?? false;
+    }
+    
+    public async Task<List<string>> GetCollectionNames()
+    {
+        CollectionHolder collections = await GetLocalCollections();
+        return collections.Collections.Select(x => x.Name).ToList();
     }
 }

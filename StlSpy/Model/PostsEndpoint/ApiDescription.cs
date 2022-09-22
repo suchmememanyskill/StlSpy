@@ -27,4 +27,14 @@ public class ApiDescription
         Color color = Avalonia.Media.Color.Parse(Color);
         return _colorCache ??= new SolidColorBrush(color);
     }
+
+    public static ApiDescription GetLocalApiDescription() => new()
+    {
+        Name = "Local",
+        Color = "#FF4500",
+        SortTypes = new(),
+        Site = new Uri("https://github.com/suchmememanyskill/StlSpy"),
+        Slug = "local",
+        Description = "Local files",
+    };
 }

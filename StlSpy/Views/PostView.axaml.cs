@@ -15,7 +15,6 @@ namespace StlSpy.Views
     {
         public Post Post { get; private set; }
         private int _imagePage = 0;
-        private LocalStorage _storage = new();
         public event Action<PostView> OnInitialised; 
 
         [Binding(nameof(PostName), "Content")] 

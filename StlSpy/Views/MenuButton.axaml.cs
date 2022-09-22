@@ -32,5 +32,7 @@ namespace StlSpy.Views
             : this(items.Select(x => x.ToTemplatedControl()), header)
         {
         }
+
+        public void SetFontSize(double fontSize) => Menu.FontSize = fontSize;
     }
 }

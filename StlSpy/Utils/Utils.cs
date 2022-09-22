@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace StlSpy.Utils;
@@ -32,5 +34,25 @@ public static class Utils
             Process.Start("explorer.exe", "\"" + path.Replace("/", "\\") + "\""); // I love windows hacks
         else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             Process.Start("xdg-open", $"\"{path}\"");
+    }
+
+    public static bool OpenPrusaSlicer(List<string> paths)
+    {
+        try
+        {
+            string stringPaths = string.Join(" ", paths.Select(x => x.Contains(" ") ? $"\"{x}\"" : x));
+                
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Process.Start("C:/Program Files/Prusa3D/PrusaSlicer/prusa-slicer.exe", stringPaths);
+            else
+                Process.Start("/usr/bin/flatpak",
+                    $"run --branch=stable --arch=x86_64 --command=entrypoint --file-forwarding com.prusa3d.PrusaSlicer @@ {stringPaths} @@");
+            
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
     }
 }

@@ -19,7 +19,6 @@ namespace StlSpy.Views
         private int _perPage = 20;
         private PreviewPostCollectionView _view;
         private string? _query;
-        private LocalStorage _storage = new();
         private PostView? _postView;
         
         public SearchView()
@@ -57,11 +56,16 @@ namespace StlSpy.Views
             }
         }
         
-        private void SetButtonsOnPostView()
+        private async void SetButtonsOnPostView()
         {
+            var addToLocalCollection = await Buttons.AddToLocalCollection(_postView!, RespondToButtonRefresh);
+            
             _postView?.SetCustomisableButtons(new()
             {
-                Buttons.DownloadButton(_postView, _storage, RespondToButtonRefresh)
+                Buttons.DownloadButton(_postView, RespondToButtonRefresh),
+                Buttons.OpenPrusaSlicerButton(_postView, RespondToButtonRefresh),
+                Buttons.OpenFolder(_postView, RespondToButtonRefresh),
+                addToLocalCollection
             });
         }
 
