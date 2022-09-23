@@ -62,7 +62,7 @@ namespace StlSpy
 
             onlineCollectionItems.Add(new());
             onlineCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(OnNewOnlineCollection)));
-            onlineCollectionItems.Add(new("Import Collection", () => ChangeViewToNewCollectionView(OnImportOnlineCollection, "Import", "Online Collection", "Input collection code here", "Import Collection")));
+            onlineCollectionItems.Add(new("Import Collection", () => ChangeViewToNewCollectionView(OnImportOnlineCollection, "Import", "Online Collection", "Enter Collection code here", "Import Collection")));
             
             StackPanel.Children.Add(new MenuButton(onlineCollectionItems, "Online Collections"));
             
