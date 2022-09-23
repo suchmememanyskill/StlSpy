@@ -48,9 +48,12 @@ public static class Buttons
         
         string path = (await storage.GetFilesPath(postView.Post))!;
 
-        Utils.OpenPrusaSlicer(Directory.EnumerateFiles(path)
+        bool result = Utils.OpenPrusaSlicer(Directory.EnumerateFiles(path)
             .Where(x => new List<string>() { ".stl", ".obj", ".3mf" }.Any(y => x.ToLower().EndsWith(y))).ToList());
-        
+
+        if (!result)
+            await Utils.ShowMessageBox(":(", "Failed to open PrusaSlicer");
+
         onCompletion?.Invoke(postView);
     }
     

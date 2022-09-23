@@ -125,9 +125,7 @@ namespace StlSpy.Views
         public async Task Share()
         {
             await ClipboardService.SetTextAsync(_token);
-            var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager
-                .GetMessageBoxStandardWindow("Clipboard", "Copied share code to clipboard");
-            await messageBoxStandardWindow.Show();
+            await Utils.Utils.ShowMessageBox("Clipboard", "Copied share code to clipboard");
         }
     }
 }
