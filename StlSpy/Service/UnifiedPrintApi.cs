@@ -71,6 +71,7 @@ public class UnifiedPrintApi
 
     public static async Task RemoveFromOnlineCollection(string token, string uid)
     {
-        
+        await Request.DeleteStringAsync(new Uri($"{SITE}/Saved/{token}/remove"),
+            $"{{\"uid\": {JsonConvert.SerializeObject(uid)}}}");
     }
 }
