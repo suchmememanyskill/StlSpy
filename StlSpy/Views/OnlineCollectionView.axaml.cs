@@ -10,6 +10,7 @@ using StlSpy.Extensions;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 using StlSpy.Utils;
+using TextCopy;
 
 namespace StlSpy.Views
 {
@@ -20,6 +21,12 @@ namespace StlSpy.Views
         private PreviewPostCollectionView _view;
         private PostView? _postView;
 
+        [Binding(nameof(DeleteCollection), "Content")]
+        public string DeleteButtonLabel => $"Remove Collection '{_collectionName}'";
+        
+        [Binding(nameof(ShareCollection), "Content")]
+        public string ShareButtonLabel => $"Share Collection '{_collectionName}'";
+        
         public event Action? ReloadTopBar;
 
         public OnlineCollectionView(string collectionName, string token) : this()
@@ -100,5 +107,27 @@ namespace StlSpy.Views
         public string SubText() => _collectionName;
 
         public IBrush? HeaderColor() => ApiDescription.GetLocalApiDescription().GetColorAsBrush();
+        
+        [Command(nameof(DeleteCollection))]
+        public async void Delete()
+        {
+            _view.SetText($"Removed {_collectionName}");
+            SetControl(null);
+            Header.IsVisible = false;
+            
+            OnlineStorage storage = OnlineStorage.Get();
+            await storage.RemoveCollection(_token);
+            
+            ReloadTopBar?.Invoke();
+        }
+
+        [Command(nameof(ShareCollection))]
+        public async Task Share()
+        {
+            await ClipboardService.SetTextAsync(_token);
+            var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager
+                .GetMessageBoxStandardWindow("Clipboard", "Copied share code to clipboard");
+            await messageBoxStandardWindow.Show();
+        }
     }
 }

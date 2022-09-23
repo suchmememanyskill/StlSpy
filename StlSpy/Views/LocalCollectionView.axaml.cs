@@ -115,7 +115,7 @@ namespace StlSpy.Views
         {
             _view.SetText($"Removing {_collectionName}...");
             SetControl(null);
-            DeleteCollection.IsVisible = false;
+            Header.IsVisible = false;
 
             LocalStorage storage = LocalStorage.Get();
             List<Post>? posts = await storage.GetLocalPosts(_collectionName);

@@ -62,7 +62,7 @@ namespace StlSpy
 
             onlineCollectionItems.Add(new());
             onlineCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(OnNewOnlineCollection)));
-            onlineCollectionItems.Add(new("Import Collection"));
+            onlineCollectionItems.Add(new("Import Collection", () => ChangeViewToNewCollectionView(OnImportOnlineCollection, "Import", "Online Collection", "Input collection code here", "Import Collection")));
             
             StackPanel.Children.Add(new MenuButton(onlineCollectionItems, "Online Collections"));
             
@@ -120,6 +120,12 @@ namespace StlSpy
         {
             SetView(new NewCollectionView(onSubmit));
         }
+        
+        public void ChangeViewToNewCollectionView(Func<string, Task<string?>> onSubmit, string mainText, string subText,
+            string watermarkText, string submitButtonText)
+        {
+            SetView(new NewCollectionView(onSubmit, mainText, subText, watermarkText, submitButtonText));
+        }
 
         public async Task<string?> OnNewLocalCollection(string collectionName)
         {
@@ -142,6 +148,25 @@ namespace StlSpy
             string token = await storage.CreateCollection(collectionName);
             SetTopButtons();
             ChangeViewToOnlineCollectionsType(collectionName, token);
+            return null;
+        }
+        
+        public async Task<string?> OnImportOnlineCollection(string token)
+        {
+            OnlineStorage storage = OnlineStorage.Get();
+            string name;
+
+            try
+            {
+                name = await storage.ImportCollection(token);
+            }
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+            
+            SetTopButtons();
+            ChangeViewToOnlineCollectionsType(name, token);
             return null;
         }
     }

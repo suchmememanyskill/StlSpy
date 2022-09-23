@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using StlSpy.Model;
 using StlSpy.Model.PostsEndpoint;
 
 namespace StlSpy.Service;
@@ -76,5 +77,33 @@ public class OnlineStorage
         items.Add(token, name);
         await Save();
         return token;
+    }
+
+    public async Task RemoveCollection(string token)
+    {
+        (await Load()).Remove(token);
+        await Save();
+    }
+
+    public async Task<string> ImportCollection(string token)
+    {
+        var items = await Load();
+        if (items.ContainsKey(token))
+            throw new Exception("Collection already exists");
+
+        OnlineCollection x;
+
+        try
+        {
+            x = await UnifiedPrintApi.GetOnlineCollection(token);
+        }
+        catch
+        {
+            throw new Exception("Collection does not exist");
+        }
+        
+        (await Load()).Add(token, x.CollectionName);
+        await Save();
+        return x.CollectionName;
     }
 }

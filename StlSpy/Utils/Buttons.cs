@@ -17,6 +17,7 @@ public static class Buttons
         Command = new LambdaCommand(_ => action())
     };
 
+    // TODO: Remove?
     public static Button DownloadButton(PostView postView, Action<PostView>? onCompletion = null)
         => CreateButton(LocalStorage.Get().AreFilesCached(postView.Post.UniversalId) ? "Delete" : "Download",
             () => HandleDownloadButton(postView, LocalStorage.Get(), onCompletion));

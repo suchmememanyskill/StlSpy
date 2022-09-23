@@ -13,7 +13,15 @@ namespace StlSpy.Views
     public partial class NewCollectionView : UserControlExt<NewCollectionView>, IMainView
     {
         private Func<string, Task<string?>>? _onSubmit;
+        private string _mainText = "Create";
+        private string _subText = "New collection";
 
+        [Binding(nameof(CollectionName), "Watermark")]
+        public string WatermarkText { get; } = "Enter Collection Name here";
+
+        [Binding(nameof(Submit), "Content")] 
+        public string SubmitButtonText { get; } = "Add Collection";
+        
         public NewCollectionView()
         {
             InitializeComponent();
@@ -25,8 +33,18 @@ namespace StlSpy.Views
             _onSubmit = onSubmit;
         }
 
-        public string MainText() => "Create";
-        public string SubText() => "New collection";
+        public NewCollectionView(Func<string, Task<string?>> onSubmit, string mainText, string subText,
+            string watermarkText, string submitButtonText) : this(onSubmit)
+        {
+            _mainText = mainText;
+            _subText = subText;
+            WatermarkText = watermarkText;
+            SubmitButtonText = submitButtonText;
+            UpdateView();
+        }
+
+        public string MainText() => _mainText;
+        public string SubText() => _subText;
         public IBrush? HeaderColor() => ApiDescription.GetLocalApiDescription().GetColorAsBrush();
 
         [Command(nameof(Submit))]
@@ -39,7 +57,7 @@ namespace StlSpy.Views
             if (string.IsNullOrWhiteSpace(s))
             {
                 Submit.IsEnabled = true;
-                ErrorText.Content = "Collection name cannot be empty";
+                ErrorText.Content = "Input cannot be empty";
                 return;
             }
             

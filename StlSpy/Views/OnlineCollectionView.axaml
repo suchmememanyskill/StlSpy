@@ -8,7 +8,9 @@
         <Panel DockPanel.Dock="Right" Name="SidePanel" />
         <ScrollViewer>
             <StackPanel Name="VerticalStackPanel" Spacing="10" Margin="10">
-                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Name="Header">
+                    <Button Name="DeleteCollection" />
+                    <Button Name="ShareCollection" />
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>
