@@ -1,0 +1,45 @@
+name: .NET
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: clone repo
+      uses: actions/checkout@v2
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+    
+    - name: Windows build
+      run: |
+        cd StlSpy
+        dotnet publish -o Windows -r win-x64 --self-contained -p:PublishSingleFile=true -p:Configuration=Release
+
+    - name: Linux build
+      run: |
+        cd StlSpy
+        dotnet publish -o Linux -r linux-x64 --self-contained -p:PublishSingleFile=true -p:Configuration=Release
+        chmod a+x Linux/StlSpy
+        
+    - name: Zip Windows Build
+      uses: edgarrc/action-7z@v1
+      with:
+        args: 7z a Windows.7z ./StlSpy/Windows
+
+    - name: Zip Linux Build
+      uses: edgarrc/action-7z@v1
+      with:
+        args: 7z a Linux.7z ./StlSpy/Linux
