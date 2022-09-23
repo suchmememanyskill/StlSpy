@@ -12,11 +12,17 @@ namespace StlSpy.Service;
 public class LocalStorage
 {
     private static LocalStorage? instance;
-    private string _basePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StlSpy");
+    private string _basePath;
     private List<Post>? _localPosts;
     private CollectionHolder? _localCollections;
 
-    private LocalStorage(){}
+    private LocalStorage()
+    {
+        _basePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StlSpy");
+
+        if (!Directory.Exists(_basePath))
+            Directory.CreateDirectory(_basePath);
+    }
     public static LocalStorage Get() => instance ??= new();
     
     private string GetPath(string uid)
