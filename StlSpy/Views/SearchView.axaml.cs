@@ -5,6 +5,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using Avalonia.Skia;
 using StlSpy.Extensions;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
@@ -14,12 +15,19 @@ namespace StlSpy.Views
 {
     public partial class SearchView : UserControlExt<SearchView>, IMainView
     {
-        private ApiDescription _api;
+        private ApiDescription? _api;
         private int _page = 1;
         private int _perPage = 20;
         private PreviewPostCollectionView _view;
         private string? _query;
         private PostView? _postView;
+        
+        public bool HasApi => (_api != null);
+
+        [Binding(nameof(LeftArrow), "IsVisible")]
+        [Binding(nameof(Page), "IsVisible")]
+        [Binding(nameof(RightArrow), "IsVisible")]
+        public bool HasResults => HasApi & !string.IsNullOrWhiteSpace(_query);
         
         public SearchView()
         {
@@ -40,20 +48,31 @@ namespace StlSpy.Views
             VerticalStackPanel.Children.Add(_view);
             SearchButton.Background = _api.GetColorAsBrush();
             Get();
+            UpdateView();
+        }
+
+        public SearchView(bool _) : this()
+        {
+            _view = new();
+            _view.OnNewSelection += x =>
+            {
+                _postView = new PostView(x.Post.UniversalId);
+                _postView.OnInitialised += RespondToButtonRefresh;
+                SetControl(_postView);
+            };
+            VerticalStackPanel.Children.Add(_view);
+            Get();   
+            UpdateView();
         }
         
         private async void Get()
         {
             if (!string.IsNullOrWhiteSpace(_query))
-            {
-                Page.IsVisible = RightArrow.IsVisible = LeftArrow.IsVisible = true;
-                _view.SetPosts(GetPosts());
-            }
+                _view.SetPosts((HasApi) ? GetApiPosts() : GetUidPosts());
             else
-            {
                 _view.SetText("");
-                Page.IsVisible = RightArrow.IsVisible = LeftArrow.IsVisible = false;
-            }
+            
+            UpdateView();
         }
         
         private async void SetButtonsOnPostView()
@@ -83,7 +102,7 @@ namespace StlSpy.Views
             SidePanel.Children.Add(control);
         }
 
-        private async Task<List<PreviewPostView>> GetPosts()
+        private async Task<List<PreviewPostView>> GetApiPosts()
         {
             LeftArrow.IsEnabled = false;
             RightArrow.IsEnabled = false;
@@ -105,9 +124,29 @@ namespace StlSpy.Views
             return collection.PreviewPosts.Select(x => new PreviewPostView(x, _api)).ToList();
         }
 
-        public string MainText() => _api.Name;
+        private async Task<List<PreviewPostView>> GetUidPosts()
+        {
+            List<string> filteredUids = _query.Split(',').Where(x => x.Contains(':')).Select(x => x.Trim()).Distinct().ToList();
+            List<Post> posts = new();
+
+            foreach (var filteredUid in filteredUids)
+            {
+                try
+                {
+                    Post? post = await UnifiedPrintApi.PostsUniversalId(filteredUid);
+                    if (post != null)
+                        posts.Add(post);
+                }
+                catch
+                { }
+            }
+            
+            return posts.Select(x => new PreviewPostView(x, ApiDescription.GetLocalApiDescription())).ToList();
+        }
+
+        public string MainText() => (HasApi) ? _api.Name : "Universal ID";
         public string SubText() => "Search";
-        public IBrush? HeaderColor() => _api.GetColorAsBrush();
+        public IBrush? HeaderColor() => (HasApi) ? _api.GetColorAsBrush() : ApiDescription.GetLocalApiDescription().GetColorAsBrush();
 
         [Command(nameof(SearchButton))]
         public void OnSearch()

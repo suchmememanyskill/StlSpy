@@ -53,8 +53,13 @@ namespace StlSpy
             
             StackPanel.Children.Add(sites);
 
+            List<Command> searchCommands = _apis.Select(x => new Command(x.Name, () => ChangeViewToSearchType(x))).ToList();
+            
+            searchCommands.Add(new Command());
+            searchCommands.Add(new("Search for Universal IDs", () => ChangeViewToSearchType(null)));
+
             MenuButton search = 
-                new(_apis.Select(x => new Command(x.Name, () => ChangeViewToSearchType(x))), "Search");
+                new(searchCommands, "Search");
             
             StackPanel.Children.Add(search);
 
@@ -98,9 +103,12 @@ namespace StlSpy
             SetView(new SortTypeView(api, sort));
         }
 
-        public void ChangeViewToSearchType(ApiDescription api)
+        public void ChangeViewToSearchType(ApiDescription? api)
         {
-            SetView(new SearchView(api));
+            if (api == null)
+                SetView(new SearchView(true));
+            else
+                SetView(new SearchView(api));
         }
 
         public void ChangeViewToLocalCollectionsType(CollectionId id)

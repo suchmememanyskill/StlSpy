@@ -8,6 +8,7 @@ using Avalonia.Media.Imaging;
 using StlSpy.Extensions;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
+using TextCopy;
 
 namespace StlSpy.Views
 {
@@ -137,6 +138,13 @@ namespace StlSpy.Views
         public void Close()
         {
             TopElement.IsVisible = false;
+        }
+
+        [Command(nameof(CopyUid))]
+        public async void CopyUidToClipboard()
+        {
+            await ClipboardService.SetTextAsync(Post.UniversalId);
+            await Utils.Utils.ShowMessageBox("Clipboard", "Copied Universal ID to clipboard");
         }
     }
 }

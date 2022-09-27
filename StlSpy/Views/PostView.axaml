@@ -16,7 +16,11 @@
                                 <Button Name="PostAuthor" Classes="invisible url" Padding="5,0" FontSize="16" />
                             </StackPanel>
                         </StackPanel>
-                        <Button DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Close" Name="CloseButton" />
+                        <StackPanel DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Top" Orientation="Horizontal" Spacing="10">
+                            <Button Name="CopyUid" Content="Copy Universal ID" />
+                            <Button DockPanel.Dock="Right" HorizontalAlignment="Right" VerticalAlignment="Top" Content="Close" Name="CloseButton" />
+                        </StackPanel>
+                        
                     </DockPanel>
                 
                     <Panel Width="790">
