@@ -58,11 +58,25 @@ namespace StlSpy.Views
                 _searchQuery = SearchBox.Text;
                 _view.Search(_searchQuery);
             };
+            
+            AddTopButtons();
         }
 
         public LocalCollectionView()
         {
             InitializeComponent();
+        }
+
+        private async void AddTopButtons()
+        {
+            MenuButton addToLocalCollections = await Buttons.AddAllToCollection(() => GetCollection(),
+                () => Header.IsEnabled = false, () => Header.IsEnabled = true, LocalStorage.Get(), new() { _id });
+            
+            MenuButton addToOnlineCollections = await Buttons.AddAllToCollection(() => GetCollection(),
+                () => Header.IsEnabled = false, () => Header.IsEnabled = true, OnlineStorage.Get());
+            
+            Header.Children.Add(addToOnlineCollections);
+            Header.Children.Add(addToLocalCollections);
         }
         
         private async void SetButtonsOnPostView()
@@ -107,6 +121,9 @@ namespace StlSpy.Views
             LocalStorage storage = LocalStorage.Get();
             return (await storage.GetPosts(_id))!.Posts.Select(x => new PreviewPostView(x, ApiDescription.GetLocalApiDescription())).ToList();
         }
+
+        private async Task<GenericCollection?> GetCollection()
+            => await LocalStorage.Get().GetPosts(_id);
         
         public void SetControl(IControl? control)
         {

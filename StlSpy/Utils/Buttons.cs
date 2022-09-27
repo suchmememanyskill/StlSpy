@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using StlSpy.Model;
+using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 using StlSpy.Views;
 
@@ -103,5 +104,67 @@ public static class Buttons
         postView.SetCustomisableButtonsStatus(false);
         await storage.AddPost(token, postView.Post);
         onCompletion?.Invoke(postView);
+    }
+
+    public static async Task<MenuButton> AddAllToCollection(Func<Task<GenericCollection?>> getPosts, Action? onStartInvoke,
+        Action? onEndInvoke, ICollectionStorage storage, List<CollectionId>? ignore = null)
+    {
+        ignore ??= new();
+        
+        var availableCollections = await storage.GetCollections();
+        List<Command> commands =
+            availableCollections.Where(x => ignore.All(y => y.Id != x.Id)).Select(x => new Command(x.Name,
+            () => HandleAddAllToCollection(getPosts, onStartInvoke, onEndInvoke, storage, x))).ToList();
+
+        MenuButton button = new(commands, $"Add all to {storage.Name()}");
+
+        if (commands.Count <= 0)
+            button.IsEnabled = false;
+        
+        button.SetFontSize(14);
+        return button;
+    }
+
+    private static async void HandleAddAllToCollection(Func<Task<GenericCollection?>> getPosts, Action? onStartInvoke,
+        Action? onEndInvoke, ICollectionStorage storage, CollectionId target)
+    {
+        onStartInvoke?.Invoke();
+
+        var posts = await getPosts();
+
+        if (posts == null)
+            return;
+
+        int successfulCount = 0;
+        int nonSuccessfulCount = 0;
+
+        var collection = await storage.GetPosts(target);
+
+        if (collection == null)
+            return;
+        
+        foreach (var post in posts.Posts)
+        {
+            if (collection.Posts.Any(x => post.UniversalId == x.UniversalId))
+            {
+                nonSuccessfulCount++;
+                continue;
+            }
+
+            try
+            {
+                await storage.AddPost(target, post);
+                successfulCount++;
+            }
+            catch
+            {
+                nonSuccessfulCount++;
+            }
+        }
+
+        await Utils.ShowMessageBox("Transfer done",
+            $"Successfully added {successfulCount} posts to {target.Name}. {nonSuccessfulCount} were skipped");
+        
+        onEndInvoke?.Invoke();
     }
 }
