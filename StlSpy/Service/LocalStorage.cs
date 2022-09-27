@@ -120,7 +120,7 @@ public class LocalStorage
 
         Author author = new()
         {
-            Name = local.Name,
+            Name = local.AuthorName,
             Website = local.AuthorSite,
             Thumbnail = new()
             {

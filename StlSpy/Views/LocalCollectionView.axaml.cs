@@ -18,6 +18,7 @@ namespace StlSpy.Views
         private string _collectionName;
         private PreviewPostCollectionView _view;
         private PostView? _postView;
+        private string _searchQuery = "";
 
         public event Action? ReloadTopBar;
 
@@ -47,6 +48,15 @@ namespace StlSpy.Views
             Get();
 
             DeleteCollection.IsVisible = collectionName != "Downloads";
+
+            SearchBox.PropertyChanged += (_, _) =>
+            {
+                if (_searchQuery == SearchBox.Text || SearchBox.Text == null)
+                    return;
+
+                _searchQuery = SearchBox.Text;
+                _view.Search(_searchQuery);
+            };
         }
 
         public LocalCollectionView()

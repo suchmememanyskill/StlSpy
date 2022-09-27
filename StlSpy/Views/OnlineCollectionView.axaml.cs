@@ -20,6 +20,7 @@ namespace StlSpy.Views
         private string _token;
         private PreviewPostCollectionView _view;
         private PostView? _postView;
+        private string _searchQuery = "";
 
         [Binding(nameof(DeleteCollection), "Content")]
         public string DeleteButtonLabel => $"Remove Collection '{_collectionName}'";
@@ -45,6 +46,15 @@ namespace StlSpy.Views
             };
             VerticalStackPanel.Children.Add(_view);
             Get();
+            
+            SearchBox.PropertyChanged += (_, _) =>
+            {
+                if (_searchQuery == SearchBox.Text || SearchBox.Text == null)
+                    return;
+
+                _searchQuery = SearchBox.Text;
+                _view.Search(_searchQuery);
+            };
         }
 
         public OnlineCollectionView()

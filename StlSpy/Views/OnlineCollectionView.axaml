@@ -9,6 +9,7 @@
         <ScrollViewer>
             <StackPanel Name="VerticalStackPanel" Spacing="10" Margin="10">
                 <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Name="Header">
+                    <TextBox Watermark="Search" Name="SearchBox" Width="200" />
                     <Button Name="DeleteCollection" />
                     <Button Name="ShareCollection" />
                 </StackPanel>

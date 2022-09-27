@@ -12,6 +12,7 @@ namespace StlSpy.Views
     public partial class PreviewPostCollectionView : UserControl
     {
         public event Action<PreviewPostView>? OnNewSelection;
+        private List<PreviewPostView> _posts = new();
         
         public PreviewPostCollectionView()
         {
@@ -21,7 +22,7 @@ namespace StlSpy.Views
 
         public void SetText(string text)
         {
-            List.Items = new List<PreviewPostView>();
+            List.Items = _posts = new();
             Label.Content = text;
         }
 
@@ -33,7 +34,7 @@ namespace StlSpy.Views
                 return;
             }
 
-            List.Items = posts;
+            List.Items = _posts = posts;
             Label.Content = "";
         }
 
@@ -41,6 +42,19 @@ namespace StlSpy.Views
         {
             SetText("Loading...");
             SetPosts(await postsTask);
+        }
+
+        public void Search(string? query)
+        {
+            if (string.IsNullOrWhiteSpace(query))
+            {
+                _posts.ForEach(x => x.IsVisible = true);
+                return;
+            }
+
+            query = query.ToLower();
+            
+            _posts.ForEach(x => x.IsVisible = (x.Post.Author.Name.ToLower().Contains(query) || x.Post.Name.ToLower().Contains(query)));
         }
 
         private void List_SelectionChanged(object? sender, SelectionChangedEventArgs e)

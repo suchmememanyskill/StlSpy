@@ -46,5 +46,8 @@
         <Style Selector="Menu.darker:pressed /template/ ContentPresenter">
             <Setter Property="Background" Value="Black"/>
         </Style>
+        <Style Selector="ListBoxItem">
+            <Setter Property="Padding" Value="0"/>
+        </Style>
     </Application.Styles>
 </Application>
