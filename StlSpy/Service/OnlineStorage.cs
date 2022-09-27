@@ -9,7 +9,7 @@ using StlSpy.Model.PostsEndpoint;
 
 namespace StlSpy.Service;
 
-public class OnlineStorage
+public class OnlineStorage : ICollectionStorage
 {
     private string _basePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StlSpy");
     private string _collectionsStoragePath;
@@ -44,46 +44,53 @@ public class OnlineStorage
         await File.WriteAllTextAsync(_collectionsStoragePath, JsonConvert.SerializeObject(_onlineCollections));
     }
 
-    public async Task<Dictionary<string, string>> GetCollections()
+    public async Task<GenericCollection?> GetPosts(CollectionId id)
     {
-        return await Load();
+        var result = await UnifiedPrintApi.GetOnlineCollection(id.Id);
+        return new(id.Id, result.CollectionName, result.Posts);
     }
 
-    public async Task<List<Post>> GetPosts(string token)
-    {
-        return (await UnifiedPrintApi.GetOnlineCollection(token)).Posts;
-    }
+    public async Task<List<CollectionId>> GetCollections()
+        => (await Load()).Select(x => new CollectionId(x.Key, x.Value)).ToList();
 
-    public async Task AddPost(string token, string uid)
-    {
-        await UnifiedPrintApi.AddToOnlineCollection(token, uid);
-    }
+    public async Task RemovePost(CollectionId id, string uid)
+        => await UnifiedPrintApi.RemoveFromOnlineCollection(id.Id, uid);
+    
 
-    public async Task RemoveFromCollection(string token, string uid)
-    {
-        await UnifiedPrintApi.RemoveFromOnlineCollection(token, uid);
-    }
+    public async Task AddPost(CollectionId id, Post post)
+        => await UnifiedPrintApi.AddToOnlineCollection(id.Id, post.UniversalId);
 
-    public async Task<bool> IsPostPartOfCollection(string token, string uid)
-    {
-        var posts = await GetPosts(token);
-        return posts.Any(x => x.UniversalId == uid);
-    }
-
-    public async Task<string> CreateCollection(string name)
+    public async Task<CollectionId> AddCollection(string name)
     {
         string token = await UnifiedPrintApi.NewOnlineCollection(name);
         var items = await Load();
         items.Add(token, name);
         await Save();
-        return token;
+        return new(token, name);
     }
 
-    public async Task RemoveCollection(string token)
+    public async Task RemoveCollection(CollectionId id)
     {
-        (await Load()).Remove(token);
+        (await Load()).Remove(id.Id);
         await Save();
     }
+
+    public async Task<bool> IsPostPartOfCollection(string uid)
+    {
+        throw new NotImplementedException("Unsupported");
+    }
+
+    public async Task<bool> IsPostPartOfCollection(string uid, CollectionId id)
+    {
+        var posts = await GetPosts(id);
+
+        if (posts == null)
+            return false;
+        
+        return posts.Posts.Any(x => x.UniversalId == uid);
+    }
+
+    public string Name() => "Online Collection";
 
     public async Task<string> ImportCollection(string token)
     {

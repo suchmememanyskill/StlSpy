@@ -9,8 +9,10 @@ using StlSpy.Model.PostsEndpoint;
 
 namespace StlSpy.Service;
 
-public class LocalStorage
+public class LocalStorage : ICollectionStorage
 {
+    public static readonly CollectionId DEFAULT_DOWNLOAD_LOCATION = new("Downloads", "Downloads");
+    
     private static LocalStorage? instance;
     private string _basePath;
     private List<Post>? _localPosts;
@@ -152,7 +154,7 @@ public class LocalStorage
         return post;
     }
 
-    public async Task<List<Post>> GetAllLocalPosts(bool force = false)
+    private async Task<List<Post>> GetAllLocalPosts(bool force = false)
     {
         if (_localPosts != null && !force)
             return _localPosts;
@@ -196,19 +198,7 @@ public class LocalStorage
         string dataPath = Path.Join(_basePath, "local.json");
         await File.WriteAllTextAsync(dataPath, JsonConvert.SerializeObject(_localCollections));
     }
-
-    public async Task<List<Post>?> GetLocalPosts(string collection)
-    {
-        CollectionHolder? collections = await GetLocalCollections();
-        Collection? col = collections?.Collections.Find(x => x.Name == collection);
-
-        if (col == null)
-            return null;
-
-        List<Post> posts = await GetAllLocalPosts();
-        return posts.Where(x => col.UIDs.Contains(x.UniversalId)).ToList();
-    }
-
+    
     public async Task DeleteLocalPost(string uid)
     {
         string fullPath = GetPath(uid);
@@ -216,21 +206,45 @@ public class LocalStorage
         await GetAllLocalPosts(true);
     }
 
-    public async Task CreateCollection(string name)
-    {
-        CollectionHolder collection = await GetLocalCollections();
+    public async Task<List<Post>> GetPosts()
+        => await GetAllLocalPosts();
 
-        if (collection.Collections.Any(x => x.Name == name))
-            throw new Exception("Collection already exists!");
+    public async Task<GenericCollection?> GetPosts(CollectionId id)
+    {
+        CollectionHolder? collections = await GetLocalCollections();
+        Collection? col = collections?.Collections.Find(x => x.Name == id.Name);
+
+        if (col == null)
+            return null;
+
+        List<Post> posts = await GetAllLocalPosts();
+        return new(id, posts.Where(x => col.UIDs.Contains(x.UniversalId)).ToList());
+    }
+
+    public async Task<List<CollectionId>> GetCollections()
+        => (await GetLocalCollections()).Collections.Select(x => new CollectionId(x.Name, x.Name)).ToList();
+
+    public async Task RemovePost(CollectionId id, string uid)
+    {
+        CollectionHolder collections = await GetLocalCollections();
+        Collection? collection = collections.Collections.Find(x => x.Name == id.Name);
+
+        if (collection == null)
+            throw new Exception("Collection does not exist!");
+
+        collection.UIDs.Remove(uid);
+        if (!await IsPostPartOfCollection(uid))
+        {
+            await DeleteLocalPost(uid);
+        }
         
-        collection.Collections.Add(new(name));
         await SaveLocalCollections();
     }
 
-    public async Task AddToCollection(string name, Post post)
+    public async Task AddPost(CollectionId id, Post post)
     {
         CollectionHolder collections = await GetLocalCollections();
-        Collection? collection = collections.Collections.Find(x => x.Name == name);
+        Collection? collection = collections.Collections.Find(x => x.Name == id.Name);
 
         if (collection == null)
             throw new Exception("Collection does not exist!");
@@ -246,48 +260,39 @@ public class LocalStorage
         await SaveLocalCollections();
     }
 
-    public async Task RemoveFromCollection(string name, string uid)
+    public async Task<CollectionId> AddCollection(string name)
     {
-        CollectionHolder collections = await GetLocalCollections();
-        Collection? collection = collections.Collections.Find(x => x.Name == name);
+        CollectionHolder collection = await GetLocalCollections();
 
-        if (collection == null)
-            throw new Exception("Collection does not exist!");
-
-        collection.UIDs.Remove(uid);
-        if (!await IsPartOfAnyCollection(uid))
-        {
-            await DeleteLocalPost(uid);
-        }
+        if (collection.Collections.Any(x => x.Name == name))
+            throw new Exception("Collection already exists!");
         
+        collection.Collections.Add(new(name));
         await SaveLocalCollections();
+        return new(name, name);
     }
 
-    public async Task RemoveCollection(string name)
+    public async Task RemoveCollection(CollectionId id)
     {
         CollectionHolder collections = await GetLocalCollections();
-        Collection? collection = collections.Collections.Find(x => x.Name == name);
+        Collection? collection = collections.Collections.Find(x => x.Name == id.Name);
         if (collection != null)
             collections.Collections.Remove(collection);
         
         await SaveLocalCollections();
     }
 
-    public async Task<bool> IsPartOfAnyCollection(string uid)
+    public async Task<bool> IsPostPartOfCollection(string uid)
     {
         var collections = await GetLocalCollections();
         return collections?.Collections.Any(x => x.UIDs.Contains(uid)) ?? false;
     }
 
-    public async Task<bool> IsPartOfSpecificCollection(string collection, string uid)
+    public async Task<bool> IsPostPartOfCollection(string uid, CollectionId id)
     {
         var collections = await GetLocalCollections();
-        return collections?.Collections.Find(x => x.Name == collection)?.UIDs.Contains(uid) ?? false;
+        return collections?.Collections.Find(x => x.Name == id.Name)?.UIDs.Contains(uid) ?? false;
     }
-    
-    public async Task<List<string>> GetCollectionNames()
-    {
-        CollectionHolder collections = await GetLocalCollections();
-        return collections.Collections.Select(x => x.Name).ToList();
-    }
+
+    public string Name() => "Local Collection";
 }

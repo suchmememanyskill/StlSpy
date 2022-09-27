@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using StlSpy.Extensions;
+using StlSpy.Model;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 using StlSpy.Utils;
@@ -15,7 +16,7 @@ namespace StlSpy.Views
 {
     public partial class LocalCollectionView : UserControlExt<LocalCollectionView>, IMainView
     {
-        private string _collectionName;
+        private CollectionId _id;
         private PreviewPostCollectionView _view;
         private PostView? _postView;
         private string _searchQuery = "";
@@ -23,11 +24,11 @@ namespace StlSpy.Views
         public event Action? ReloadTopBar;
 
         [Binding(nameof(DeleteCollection), "Content")]
-        public string DeleteButtonLabel => $"Remove Collection '{_collectionName}'";
+        public string DeleteButtonLabel => $"Remove Collection '{_id.Name}'";
 
-        public LocalCollectionView(string collectionName) : this()
+        public LocalCollectionView(CollectionId id) : this()
         {
-            _collectionName = collectionName;
+            _id = id;
             SetControls();
             UpdateView();
             _view = new();
@@ -47,7 +48,7 @@ namespace StlSpy.Views
             VerticalStackPanel.Children.Add(_view);
             Get();
 
-            DeleteCollection.IsVisible = collectionName != "Downloads";
+            DeleteCollection.IsVisible = id.Name != "Downloads";
 
             SearchBox.PropertyChanged += (_, _) =>
             {
@@ -66,12 +67,12 @@ namespace StlSpy.Views
         
         private async void SetButtonsOnPostView()
         {
-            var addToLocalCollection = await Buttons.AddToLocalCollection(_postView!, RespondToButtonRefresh);
-            var addToOnlineCollection = await Buttons.AddToOnlineCollection(_postView!, RespondToButtonRefresh);
+            var addToLocalCollection = await Buttons.AddToCollection(_postView!, LocalStorage.Get(), RespondToButtonRefresh);
+            var addToOnlineCollection = await Buttons.AddToCollection(_postView!, OnlineStorage.Get(), RespondToButtonRefresh);
             
             _postView?.SetCustomisableButtons(new()
             {
-                Buttons.CreateButton($"Remove from {_collectionName}", OnRemove),
+                Buttons.CreateButton($"Remove from {_id.Name}", OnRemove),
                 Buttons.OpenPrusaSlicerButton(_postView, RespondToButtonRefresh),
                 Buttons.OpenFolder(_postView, RespondToButtonRefresh),
                 addToOnlineCollection,
@@ -84,8 +85,8 @@ namespace StlSpy.Views
             _postView?.SetCustomisableButtonsStatus(false);
 
             LocalStorage storage = LocalStorage.Get();
-            await storage.RemoveFromCollection(_collectionName, _postView?.Post.UniversalId ?? "");
-            
+            await storage.RemovePost(_id, _postView?.Post.UniversalId ?? "");
+
             SetControl(null);
             Get();
         }
@@ -104,7 +105,7 @@ namespace StlSpy.Views
         private async Task<List<PreviewPostView>> GetPosts()
         {
             LocalStorage storage = LocalStorage.Get();
-            return (await storage.GetLocalPosts(_collectionName)).Select(x => new PreviewPostView(x, ApiDescription.GetLocalApiDescription())).ToList();
+            return (await storage.GetPosts(_id))!.Posts.Select(x => new PreviewPostView(x, ApiDescription.GetLocalApiDescription())).ToList();
         }
         
         public void SetControl(IControl? control)
@@ -116,35 +117,35 @@ namespace StlSpy.Views
 
         public string MainText() => "Local";
 
-        public string SubText() => _collectionName;
+        public string SubText() => _id.Name;
 
         public IBrush? HeaderColor() => ApiDescription.GetLocalApiDescription().GetColorAsBrush();
 
         [Command(nameof(DeleteCollection))]
         public async void Delete()
         {
-            _view.SetText($"Removing {_collectionName}...");
+            _view.SetText($"Removing {_id.Name}...");
             SetControl(null);
             Header.IsVisible = false;
 
             LocalStorage storage = LocalStorage.Get();
-            List<Post>? posts = await storage.GetLocalPosts(_collectionName);
+            var posts = await storage.GetPosts(_id);
 
             if (posts == null)
             {
-                _view.SetText($"Failed to remove {_collectionName}...");
+                _view.SetText($"Failed to remove {_id.Name}...");
                 return;
             }
 
-            await storage.RemoveCollection(_collectionName);
+            await storage.RemoveCollection(_id);
             
-            foreach (var post in posts)
+            foreach (var post in posts.Posts)
             {
-                if (!await storage.IsPartOfAnyCollection(post.UniversalId))
+                if (!await storage.IsPostPartOfCollection(post.UniversalId))
                     await storage.DeleteLocalPost(post.UniversalId);
             }
 
-            _view.SetText($"Removed {_collectionName}");
+            _view.SetText($"Removed {_id.Name}");
             ReloadTopBar?.Invoke();
         }
     }

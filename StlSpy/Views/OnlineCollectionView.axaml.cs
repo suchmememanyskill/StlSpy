@@ -7,6 +7,7 @@ using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using StlSpy.Extensions;
+using StlSpy.Model;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 using StlSpy.Utils;
@@ -16,24 +17,22 @@ namespace StlSpy.Views
 {
     public partial class OnlineCollectionView : UserControlExt<OnlineCollectionView>, IMainView
     {
-        private string _collectionName;
-        private string _token;
+        private CollectionId _id;
         private PreviewPostCollectionView _view;
         private PostView? _postView;
         private string _searchQuery = "";
 
         [Binding(nameof(DeleteCollection), "Content")]
-        public string DeleteButtonLabel => $"Remove Collection '{_collectionName}'";
+        public string DeleteButtonLabel => $"Remove Collection '{_id.Name}'";
         
         [Binding(nameof(ShareCollection), "Content")]
-        public string ShareButtonLabel => $"Share Collection '{_collectionName}'";
+        public string ShareButtonLabel => $"Share Collection '{_id.Name}'";
         
         public event Action? ReloadTopBar;
 
-        public OnlineCollectionView(string collectionName, string token) : this()
+        public OnlineCollectionView(CollectionId id) : this()
         {
-            _collectionName = collectionName;
-            _token = token;
+            _id = id;
             SetControls();
             UpdateView();
             _view = new();
@@ -64,12 +63,12 @@ namespace StlSpy.Views
         
         private async void SetButtonsOnPostView()
         {
-            var addToLocalCollection = await Buttons.AddToLocalCollection(_postView!, RespondToButtonRefresh);
-            var addToOnlineCollection = await Buttons.AddToOnlineCollection(_postView!, RespondToButtonRefresh);
+            var addToLocalCollection = await Buttons.AddToCollection(_postView!, LocalStorage.Get(), RespondToButtonRefresh);
+            var addToOnlineCollection = await Buttons.AddToCollection(_postView!, OnlineStorage.Get(), RespondToButtonRefresh);
             
             _postView?.SetCustomisableButtons(new()
             {
-                Buttons.CreateButton($"Remove from {_collectionName}", OnRemove),
+                Buttons.CreateButton($"Remove from {_id.Name}", OnRemove),
                 Buttons.OpenPrusaSlicerButton(_postView, RespondToButtonRefresh),
                 Buttons.OpenFolder(_postView, RespondToButtonRefresh),
                 addToOnlineCollection,
@@ -82,7 +81,7 @@ namespace StlSpy.Views
             _postView?.SetCustomisableButtonsStatus(false);
 
             OnlineStorage storage = OnlineStorage.Get();
-            await storage.RemoveFromCollection(_token, _postView?.Post.UniversalId ?? "");
+            await storage.RemovePost(_id, _postView?.Post.UniversalId ?? "");
             
             SetControl(null);
             Get();
@@ -102,7 +101,7 @@ namespace StlSpy.Views
         private async Task<List<PreviewPostView>> GetPosts()
         {
             OnlineStorage storage = OnlineStorage.Get();
-            return (await storage.GetPosts(_token)).Select(x => new PreviewPostView(x, ApiDescription.GetLocalApiDescription())).ToList();
+            return (await storage.GetPosts(_id))!.Posts.Select(x => new PreviewPostView(x, ApiDescription.GetLocalApiDescription())).ToList();
         }
         
         public void SetControl(IControl? control)
@@ -114,19 +113,19 @@ namespace StlSpy.Views
 
         public string MainText() => "Online";
 
-        public string SubText() => _collectionName;
+        public string SubText() => _id.Name;
 
         public IBrush? HeaderColor() => ApiDescription.GetLocalApiDescription().GetColorAsBrush();
         
         [Command(nameof(DeleteCollection))]
         public async void Delete()
         {
-            _view.SetText($"Removed {_collectionName}");
+            _view.SetText($"Removed {_id.Name}");
             SetControl(null);
             Header.IsVisible = false;
             
             OnlineStorage storage = OnlineStorage.Get();
-            await storage.RemoveCollection(_token);
+            await storage.RemoveCollection(_id);
             
             ReloadTopBar?.Invoke();
         }
@@ -134,7 +133,7 @@ namespace StlSpy.Views
         [Command(nameof(ShareCollection))]
         public async Task Share()
         {
-            await ClipboardService.SetTextAsync(_token);
+            await ClipboardService.SetTextAsync(_id.Id);
             await Utils.Utils.ShowMessageBox("Clipboard", "Copied share code to clipboard");
         }
     }

@@ -58,8 +58,8 @@ namespace StlSpy.Views
         
         private async void SetButtonsOnPostView()
         {
-            var addToLocalCollection = await Buttons.AddToLocalCollection(_postView!, RespondToButtonRefresh);
-            var addToOnlineCollection = await Buttons.AddToOnlineCollection(_postView!, RespondToButtonRefresh);
+            var addToLocalCollection = await Buttons.AddToCollection(_postView!, LocalStorage.Get(), RespondToButtonRefresh);
+            var addToOnlineCollection = await Buttons.AddToCollection(_postView!, OnlineStorage.Get(), RespondToButtonRefresh);
             
             _postView?.SetCustomisableButtons(new()
             {

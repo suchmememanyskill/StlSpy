@@ -6,6 +6,7 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using StlSpy.Extensions;
+using StlSpy.Model;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 using StlSpy.Utils;
@@ -40,8 +41,8 @@ namespace StlSpy
             
             LocalStorage localStorage = LocalStorage.Get();
             OnlineStorage onlineStorage = OnlineStorage.Get();
-            if (!(await localStorage.GetCollectionNames()).Contains("Downloads"))
-                await localStorage.CreateCollection("Downloads");
+            if ((await localStorage.GetCollections()).All(x => x.Name != "Downloads"))
+                await localStorage.AddCollection("Downloads");
 
             _apis = await UnifiedPrintApi.PostsServices();
 
@@ -58,19 +59,19 @@ namespace StlSpy
             StackPanel.Children.Add(search);
 
             List<Command> onlineCollectionItems = (await onlineStorage.GetCollections())
-                .Select(x => new Command(x.Value, () => ChangeViewToOnlineCollectionsType(x.Value, x.Key))).ToList();
+                .Select(x => new Command(x.Name, () => ChangeViewToOnlineCollectionsType(x))).ToList();
 
             onlineCollectionItems.Add(new());
-            onlineCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(OnNewOnlineCollection)));
+            onlineCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, OnlineStorage.Get(), true))));
             onlineCollectionItems.Add(new("Import Collection", () => ChangeViewToNewCollectionView(OnImportOnlineCollection, "Import", "Online Collection", "Enter Collection code here", "Import Collection")));
             
             StackPanel.Children.Add(new MenuButton(onlineCollectionItems, "Online Collections"));
             
-            List<Command> localCollectionItems = (await localStorage.GetCollectionNames())
-                .Select(x => new Command(x, () => ChangeViewToLocalCollectionsType(x))).ToList();
+            List<Command> localCollectionItems = (await localStorage.GetCollections())
+                .Select(x => new Command(x.Name, () => ChangeViewToLocalCollectionsType(x))).ToList();
             
             localCollectionItems.Add(new());
-            localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(OnNewLocalCollection)));
+            localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, LocalStorage.Get(), false))));
             
             StackPanel.Children.Add(new MenuButton(localCollectionItems, "Local Collections"));
         }
@@ -102,16 +103,16 @@ namespace StlSpy
             SetView(new SearchView(api));
         }
 
-        public void ChangeViewToLocalCollectionsType(string collection)
+        public void ChangeViewToLocalCollectionsType(CollectionId id)
         {
-            var x = new LocalCollectionView(collection);
+            var x = new LocalCollectionView(id);
             x.ReloadTopBar += SetTopButtons;
             SetView(x);
         }
         
-        public void ChangeViewToOnlineCollectionsType(string name, string token)
+        public void ChangeViewToOnlineCollectionsType(CollectionId id)
         {
-            var x = new OnlineCollectionView(name, token);
+            var x = new OnlineCollectionView(id);
             x.ReloadTopBar += SetTopButtons;
             SetView(x);
         }
@@ -127,30 +128,28 @@ namespace StlSpy
             SetView(new NewCollectionView(onSubmit, mainText, subText, watermarkText, submitButtonText));
         }
 
-        public async Task<string?> OnNewLocalCollection(string collectionName)
+        public async Task<string?> OnNewCollection(string collectionName, ICollectionStorage storage, bool online)
         {
-            LocalStorage storage = LocalStorage.Get();
-            if ((await storage.GetCollectionNames()).Contains(collectionName))
+            CollectionId id;
+            try
             {
-                return "Collection already exists";
+                id = await storage.AddCollection(collectionName);
             }
-
-            await storage.CreateCollection(collectionName);
+            catch (Exception e)
+            {
+                return e.Message;
+            }
+            
             SetTopButtons();
-            ChangeViewToLocalCollectionsType(collectionName);
+
+            if (online)
+                ChangeViewToOnlineCollectionsType(id);
+            else
+                ChangeViewToLocalCollectionsType(id);
+            
             return null;
         }
-        
-        public async Task<string?> OnNewOnlineCollection(string collectionName)
-        {
-            OnlineStorage storage = OnlineStorage.Get();
 
-            string token = await storage.CreateCollection(collectionName);
-            SetTopButtons();
-            ChangeViewToOnlineCollectionsType(collectionName, token);
-            return null;
-        }
-        
         public async Task<string?> OnImportOnlineCollection(string token)
         {
             OnlineStorage storage = OnlineStorage.Get();
@@ -166,7 +165,7 @@ namespace StlSpy
             }
             
             SetTopButtons();
-            ChangeViewToOnlineCollectionsType(name, token);
+            ChangeViewToOnlineCollectionsType(new(token, name));
             return null;
         }
     }
