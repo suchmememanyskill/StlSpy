@@ -138,6 +138,7 @@ public static class Buttons
             return;
 
         int successfulCount = 0;
+        int skippedCount = 0;
         int nonSuccessfulCount = 0;
 
         var collection = await storage.GetPosts(target);
@@ -149,7 +150,7 @@ public static class Buttons
         {
             if (collection.Posts.Any(x => post.UniversalId == x.UniversalId))
             {
-                nonSuccessfulCount++;
+                skippedCount++;
                 continue;
             }
 
@@ -165,7 +166,7 @@ public static class Buttons
         }
 
         await Utils.ShowMessageBox("Transfer done",
-            $"Successfully added {successfulCount} posts to {target.Name}. {nonSuccessfulCount} were skipped");
+            $"Successfully added {successfulCount} posts to {target.Name}. {skippedCount} posts were skipped, {nonSuccessfulCount} posts failed");
         
         onEndInvoke?.Invoke();
     }
