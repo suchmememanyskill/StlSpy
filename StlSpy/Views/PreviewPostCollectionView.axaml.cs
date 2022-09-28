@@ -24,7 +24,7 @@ namespace StlSpy.Views
         {
             List.Items = _posts = new();
             Label.Content = text;
-            Label.IsVisible = string.IsNullOrWhiteSpace(text);
+            Label.IsVisible = !string.IsNullOrWhiteSpace(text);
             CountLabel.IsVisible = false;
         }
 
