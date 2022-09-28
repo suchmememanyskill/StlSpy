@@ -24,6 +24,8 @@ namespace StlSpy.Views
         {
             List.Items = _posts = new();
             Label.Content = text;
+            Label.IsVisible = string.IsNullOrWhiteSpace(text);
+            CountLabel.IsVisible = false;
         }
 
         public void SetPosts(List<PreviewPostView> posts)
@@ -36,6 +38,9 @@ namespace StlSpy.Views
 
             List.Items = _posts = posts;
             Label.Content = "";
+            Label.IsVisible = false;
+            CountLabel.IsVisible = true;
+            CountLabel.Content = $"Found {_posts.Count} posts";
         }
 
         public async void SetPosts(Task<List<PreviewPostView>> postsTask)

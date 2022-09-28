@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="StlSpy.Views.PreviewPostCollectionView">
-  <Panel>
+  <StackPanel Spacing="10">
       <ListBox HorizontalAlignment="Center" Name="List" Background="Transparent">
           <ListBox.ItemsPanel>
               <ItemsPanelTemplate>
@@ -14,5 +14,6 @@
       </ListBox>
 
       <Label FontSize="30" FontWeight="Bold" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Name="Label" />
-  </Panel>
+      <Label FontSize="14" Name="CountLabel" HorizontalAlignment="Center" />
+  </StackPanel>
 </UserControl>

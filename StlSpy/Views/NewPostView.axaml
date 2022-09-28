@@ -23,8 +23,8 @@
       </DockPanel>
       <DockPanel LastChildFill="True">
           <Label DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2">Description</Label>
-          <TextBox DockPanel.Dock="Right" Name="Description" />
+          <TextBox DockPanel.Dock="Right" Name="Description" TextWrapping="Wrap" AcceptsReturn="True" />
       </DockPanel>
-      <Label Name="ErrorLabel" Foreground="Red" />
+      <Label Name="ErrorLabel" Foreground="Red" HorizontalAlignment="Center" />
   </StackPanel>
 </UserControl>
