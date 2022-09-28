@@ -13,11 +13,13 @@ public class ApiFile
     public Uri? Url { get; set; }
     public string? FullFilePath { get; set; }
 
-    public async Task<byte[]> Get()
+    public async Task<byte[]?> Get()
     {
         if (FullFilePath != null)
             return await File.ReadAllBytesAsync(FullFilePath);
-        
-        return await Request.GetAsync(Url!);
+        else if (Url != null)
+            return await Request.GetAsync(Url!);
+        else 
+            return null;
     }
 }

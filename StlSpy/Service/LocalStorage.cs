@@ -86,11 +86,19 @@ public class LocalStorage : ICollectionStorage
 
         string thumbnailPath = Path.Join(fullPath, "thumbnail.jpg");
         if (!File.Exists(thumbnailPath))
-            await File.WriteAllBytesAsync(thumbnailPath, await post.Thumbnail.Get());
-
+        {
+            byte[]? thumbnail = await post.Thumbnail.Get();
+            if (thumbnail != null)
+                await File.WriteAllBytesAsync(thumbnailPath, thumbnail);
+        }
+        
         string authorPath = Path.Join(fullPath, "author.jpg");
         if (!File.Exists(authorPath))
-            await File.WriteAllBytesAsync(authorPath, await post.Author.Thumbnail.Get());
+        {
+            byte[]? thumbnail = await post.Author.Thumbnail.Get();
+            if (thumbnail != null)
+                await File.WriteAllBytesAsync(authorPath, thumbnail);
+        }
 
         LocalPost local = new(post);
 
@@ -120,6 +128,7 @@ public class LocalStorage : ICollectionStorage
             FullFilePath = x
         }).ToList();
 
+        string authorThumbnailPath = Path.Join(fullPath, "author.jpg");
         Author author = new()
         {
             Name = local.AuthorName,
@@ -127,10 +136,11 @@ public class LocalStorage : ICollectionStorage
             Thumbnail = new()
             {
                 Name = "author.jpg",
-                FullFilePath = Path.Join(fullPath, "author.jpg")
+                FullFilePath = File.Exists(authorThumbnailPath) ? authorThumbnailPath : null
             }
         };
 
+        string postThumbnailPath = Path.Join(fullPath, "thumbnail.jpg");
         Post post = new()
         {
             Added = local.Added,
@@ -148,7 +158,7 @@ public class LocalStorage : ICollectionStorage
             Thumbnail = new()
             {
                 Name = "thumbnail.jpg",
-                FullFilePath = Path.Join(fullPath, "thumbnail.jpg")
+                FullFilePath = File.Exists(postThumbnailPath) ? postThumbnailPath : null
             }
         };
         return post;
