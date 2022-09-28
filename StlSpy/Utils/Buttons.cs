@@ -4,10 +4,12 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Controls;
+using Newtonsoft.Json;
 using StlSpy.Model;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 using StlSpy.Views;
+using TextCopy;
 
 namespace StlSpy.Utils;
 
@@ -165,6 +167,25 @@ public static class Buttons
         await Utils.ShowMessageBox("Transfer done",
             $"Successfully added {successfulCount} posts to {target.Name}. {nonSuccessfulCount} were skipped");
         
+        onEndInvoke?.Invoke();
+    }
+
+    public static Button DumpToJson(Func<Task<GenericCollection?>> getPosts, Action? onStartInvoke,
+        Action? onEndInvoke)
+        => CreateButton("Export to JSON", () => HandleExportToJson(getPosts, onStartInvoke, onEndInvoke));
+
+    private static async void HandleExportToJson(Func<Task<GenericCollection?>> getPosts, Action? onStartInvoke,
+        Action? onEndInvoke)
+    {
+        onStartInvoke?.Invoke();
+        var collection = await getPosts();
+
+        if (collection == null)
+            return;
+        
+        string json = JsonConvert.SerializeObject(collection);
+        await ClipboardService.SetTextAsync(json);
+        await Utils.ShowMessageBox("Clipboard", "Copied JSON to clipboard");
         onEndInvoke?.Invoke();
     }
 }

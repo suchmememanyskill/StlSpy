@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -88,6 +89,11 @@ namespace StlSpy.Views
             
             Header.Children.Add(addToOnlineCollections);
             Header.Children.Add(addToLocalCollections);
+            
+            if (File.Exists("DEV"))
+            {
+                Header.Children.Add(Buttons.DumpToJson(GetCollection, () => Header.IsEnabled = false, () => Header.IsEnabled = true));
+            }
         }
 
         private async void OnRemove()
