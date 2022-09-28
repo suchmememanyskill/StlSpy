@@ -93,8 +93,7 @@ namespace StlSpy.Views
             _postView?.SetCustomisableButtons(new()
             {
                 Buttons.CreateButton($"Remove from {_id.Name}", OnRemove),
-                Buttons.OpenPrusaSlicerButton(_postView, RespondToButtonRefresh),
-                Buttons.OpenFolder(_postView, RespondToButtonRefresh),
+                Buttons.OpenInButton(_postView, RespondToButtonRefresh),
                 addToOnlineCollection,
                 addToLocalCollection
             });

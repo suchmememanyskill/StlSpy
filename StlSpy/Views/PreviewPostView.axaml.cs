@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
@@ -16,6 +17,7 @@ namespace StlSpy.Views
     {
         public PreviewPost Post { get; }
         public ApiDescription Api { get; }
+        private bool _downloadedImage = false;
 
         [Binding(nameof(Panel), "Background")] 
         public IBrush Color => Api.GetColorAsBrush();
@@ -25,6 +27,10 @@ namespace StlSpy.Views
 
         public async void DownloadImage()
         {
+            if (_downloadedImage)
+                return;
+
+            _downloadedImage = true;
             try
             {
                 byte[]? data = await Post.Thumbnail.Get();
@@ -48,12 +54,21 @@ namespace StlSpy.Views
             InitializeComponent();
             SetControls();
             UpdateView();
-            DownloadImage();
+            EffectiveViewportChanged += EffectiveViewportChangedReact;
         }
 
         public PreviewPostView()
         {
             InitializeComponent();
+        }
+        
+        private void EffectiveViewportChangedReact(object? obj, EffectiveViewportChangedEventArgs args)
+        {
+            if (args.EffectiveViewport.IsEmpty)
+                return;
+        
+            EffectiveViewportChanged -= EffectiveViewportChangedReact;
+            DownloadImage();
         }
     }
 }

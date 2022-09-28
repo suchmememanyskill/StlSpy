@@ -51,8 +51,7 @@ namespace StlSpy.Views
             _postView?.SetCustomisableButtons(new()
             {
                 Buttons.DownloadButton(_postView, RespondToButtonRefresh),
-                Buttons.OpenPrusaSlicerButton(_postView, RespondToButtonRefresh),
-                Buttons.OpenFolder(_postView, RespondToButtonRefresh),
+                Buttons.OpenInButton(_postView, RespondToButtonRefresh),
                 addToOnlineCollection,
                 addToLocalCollection
             });

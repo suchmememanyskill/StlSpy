@@ -11,6 +11,8 @@ namespace StlSpy.Views
 {
     public partial class MenuButton : UserControl
     {
+        private List<TemplatedControl> _items = new();
+        
         public MenuButton()
         {
             InitializeComponent();
@@ -20,17 +22,25 @@ namespace StlSpy.Views
             : this()
         {
             Menu.Header = header;
+            Menu.Items = _items = new List<TemplatedControl>();
         }
 
         public MenuButton(IEnumerable<TemplatedControl> items, string header)
             : this(header)
         {
-            Menu.Items = items.ToList();
+            Menu.Items = _items = items.ToList();
         }
 
         public MenuButton(IEnumerable<Command> items, string header)
             : this(items.Select(x => x.ToTemplatedControl()), header)
         {
+        }
+
+        public void Add(Command command)
+        {
+            _items.Add(command.ToTemplatedControl());
+            Menu.Items = null;
+            Menu.Items = _items;
         }
 
         public void SetFontSize(double fontSize) => Menu.FontSize = fontSize;

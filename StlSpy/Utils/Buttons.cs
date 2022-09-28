@@ -39,6 +39,15 @@ public static class Buttons
         onCompletion?.Invoke(postView);
     }
 
+    public static MenuButton OpenInButton(PostView postView, Action<PostView>? onCompletion = null)
+    {
+        MenuButton button = new MenuButton("Open in");
+        button.Add(new("PrusaSlicer", () => HandleOpenPrusaSlicerButton(postView, onCompletion)));
+        button.Add(new("Explorer", () => HandleOpenFolder(postView, onCompletion)));
+        button.SetFontSize(14);
+        return button;
+    }
+
     public static Button OpenPrusaSlicerButton(PostView postView, Action<PostView>? onCompletion = null)
         => CreateButton("Open PrusaSlicer", () => HandleOpenPrusaSlicerButton(postView, onCompletion));
 
