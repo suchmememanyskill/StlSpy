@@ -103,6 +103,7 @@ namespace StlSpy.Views
                 {
                     Stream stream = new MemoryStream(data);
                     MainImage.Source = Bitmap.DecodeToWidth(stream, 790);
+                    LeftImageButton.IsVisible = RightImageButton.IsVisible = true;
                 }
             }
             catch (Exception e)

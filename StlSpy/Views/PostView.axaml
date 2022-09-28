@@ -25,8 +25,8 @@
                 
                     <Panel Width="790">
                         <Image MaxHeight="790" Width="790" Name="MainImage" />
-                        <Button Classes="darker" FontSize="25" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10" Name="LeftImageButton">&lt;</Button>
-                        <Button Classes="darker" FontSize="25" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10" Name="RightImageButton">&gt;</Button>
+                        <Button Classes="darker" FontSize="25" IsVisible="False" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10" Name="LeftImageButton">&lt;</Button>
+                        <Button Classes="darker" FontSize="25" IsVisible="False" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10" Name="RightImageButton">&gt;</Button>
                     </Panel>
                     
                     <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Name="CustomisableButtons" />

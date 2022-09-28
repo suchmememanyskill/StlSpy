@@ -16,9 +16,12 @@ namespace StlSpy
 {
     public partial class MainWindow : Window
     {
+        public static MainWindow? Window { get; private set; }
+        
         private List<ApiDescription> _apis;
         public MainWindow()
         {
+            Window = this;
             InitializeComponent();
             Init();
         }
@@ -77,6 +80,7 @@ namespace StlSpy
             
             localCollectionItems.Add(new());
             localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, LocalStorage.Get(), false))));
+            localCollectionItems.Add(new("New Custom Post", () => SetView(new NewPostView())));
             
             StackPanel.Children.Add(new MenuButton(localCollectionItems, "Local Collections"));
         }

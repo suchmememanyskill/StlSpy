@@ -1,0 +1,30 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="StlSpy.Views.NewPostView">
+  <StackPanel Spacing="10" Width="600" Name="StackPanel" Margin="20">
+      <DockPanel LastChildFill="True">
+          <Label DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2">Name</Label>
+          <TextBox DockPanel.Dock="Right" Name="Name" />
+      </DockPanel>
+      <DockPanel LastChildFill="True">
+          <Label DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2">Website</Label>
+          <TextBox DockPanel.Dock="Right" Name="Website">https://github.com/suchmememanyskill/StlSpy</TextBox>
+      </DockPanel>
+      <DockPanel LastChildFill="True">
+          <Label DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2">Author Name</Label>
+          <TextBox DockPanel.Dock="Right" Name="AuthorName" />
+      </DockPanel>
+      <DockPanel LastChildFill="True">
+          <Label DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2">Author Website</Label>
+          <TextBox DockPanel.Dock="Right" Name="AuthorWebsite">https://github.com/suchmememanyskill/StlSpy</TextBox>
+      </DockPanel>
+      <DockPanel LastChildFill="True">
+          <Label DockPanel.Dock="Left" VerticalAlignment="Center" Margin="2">Description</Label>
+          <TextBox DockPanel.Dock="Right" Name="Description" />
+      </DockPanel>
+      <Label Name="ErrorLabel" Foreground="Red" />
+  </StackPanel>
+</UserControl>

@@ -117,6 +117,35 @@ public class LocalStorage : ICollectionStorage
         LocalPost post = JsonConvert.DeserializeObject<LocalPost>(await File.ReadAllTextAsync(dataPath))!;
         return LocalToPost(post);
     }
+
+    public async Task<Post> NewLocalPost(string name, string website, string authorName, string authorWebsite,
+        string description)
+    {
+        string id = Guid.NewGuid().ToString();
+
+        LocalPost local = new LocalPost()
+        {
+            Added = DateTimeOffset.Now,
+            AuthorName = authorName,
+            AuthorSite = new Uri(authorWebsite),
+            Description = description,
+            DownloadCount = 0,
+            Id = id,
+            LikeCount = 0,
+            Modified = DateTimeOffset.Now,
+            Name = name,
+            UniversalId = $"stlspy:{id}",
+            Website = new Uri(website)
+        };
+
+        string fullPath = GetPath(local.UniversalId);
+        Directory.CreateDirectory(Path.Join(fullPath, "Files"));
+        Directory.CreateDirectory(Path.Join(fullPath, "Images"));
+        
+        await File.WriteAllTextAsync(Path.Join(fullPath, "data.json"), JsonConvert.SerializeObject(local));
+        await GetAllLocalPosts(true);
+        return LocalToPost(local);
+    }
     
     private Post LocalToPost(LocalPost local)
     {
