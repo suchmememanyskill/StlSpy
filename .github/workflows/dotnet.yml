@@ -7,9 +7,41 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  build-linux:
     runs-on: ubuntu-latest
+
+    steps:
+    - name: clone repo
+      uses: actions/checkout@v2
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Linux build
+      run: |
+        cd StlSpy
+        dotnet publish -o Linux -r linux-x64 --self-contained -p:PublishSingleFile=true -p:Configuration=Release
+        chmod a+x Linux/StlSpy
+
+    - name: Zip Linux Build
+      uses: edgarrc/action-7z@v1
+      with:
+        args: 7z a Linux.7z ./StlSpy/Linux
+
+    - name: Upload Linux artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: StlSpy Linux
+        path: |
+          Linux.7z
+
+  build-windows:
+    runs-on: windows-latest
 
     steps:
     - name: clone repo
@@ -27,22 +59,11 @@ jobs:
       run: |
         cd StlSpy
         dotnet publish -o Windows -r win-x64 --self-contained -p:PublishSingleFile=true -p:Configuration=Release
-
-    - name: Linux build
-      run: |
-        cd StlSpy
-        dotnet publish -o Linux -r linux-x64 --self-contained -p:PublishSingleFile=true -p:Configuration=Release
-        chmod a+x Linux/StlSpy
         
     - name: Zip Windows Build
       uses: edgarrc/action-7z@v1
       with:
         args: 7z a Windows.7z ./StlSpy/Windows
-
-    - name: Zip Linux Build
-      uses: edgarrc/action-7z@v1
-      with:
-        args: 7z a Linux.7z ./StlSpy/Linux
 
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v2
@@ -50,10 +71,3 @@ jobs:
         name: StlSpy Windows
         path: |
           Windows.7z
-
-    - name: Upload Linux artifacts
-      uses: actions/upload-artifact@v2
-      with:
-        name: StlSpy Linux
-        path: |
-          Linux.7z
