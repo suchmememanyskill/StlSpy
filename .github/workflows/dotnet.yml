@@ -61,13 +61,12 @@ jobs:
         dotnet publish -o Windows -r win-x64 --self-contained -p:PublishSingleFile=true -p:Configuration=Release
         
     - name: Zip Windows Build
-      uses: edgarrc/action-7z@v1
-      with:
-        args: 7z a Windows.7z ./StlSpy/Windows
+      run: |
+        Compress-Archive ./StlSpy/Windows Windows.zip
 
     - name: Upload Windows artifacts
       uses: actions/upload-artifact@v2
       with:
         name: StlSpy Windows
         path: |
-          Windows.7z
+          Windows.zip
