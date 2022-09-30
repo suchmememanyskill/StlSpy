@@ -19,12 +19,13 @@ public partial class TaskProgressView : UserControl
     {
         while (true)
         {
-            await Task.Delay(500);
             int totalTasks = AppTask.Tasks.Count;
             if (totalTasks > 0)
                 SetTask(AppTask.Tasks.First(), totalTasks);
             else
                 SetTask(null, 0);
+            
+            await Task.Delay(500);
         }
     }
 
