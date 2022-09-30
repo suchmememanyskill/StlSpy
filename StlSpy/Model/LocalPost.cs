@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using Newtonsoft.Json;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 
@@ -20,6 +21,9 @@ public class LocalPost
     public DateTimeOffset Modified { get; set; }
     public long DownloadCount { get; set; }
     public long LikeCount { get; set; }
+    
+    [JsonIgnore]
+    public string? FolderPath { get; set; }
 
     public LocalPost() {}
 

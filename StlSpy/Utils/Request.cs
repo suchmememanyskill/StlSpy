@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace StlSpy.Utils
@@ -24,13 +25,17 @@ namespace StlSpy.Utils
 
         public static async Task<byte[]> GetAsync(Uri uri, Dictionary<string, string> headers)
         {
-            using (var client = new WebClient())
+            using (HttpClient client = new())
             {
+                client.Timeout = TimeSpan.FromMinutes(5);
+
                 foreach (var kv in headers)
-                    client.Headers[kv.Key] = kv.Value;
-                
-                return await client.DownloadDataTaskAsync(uri);
-            }  
+                    client.DefaultRequestHeaders.Add(kv.Key, kv.Value);
+
+                HttpResponseMessage response = await client.GetAsync(uri);
+                response.EnsureSuccessStatusCode();
+                return await response.Content.ReadAsByteArrayAsync();
+            }
         }
 
         public static string GetString(Uri uri) => GetString(uri, new());

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,27 +15,25 @@ public class LocalStorage : ICollectionStorage
     public static readonly CollectionId DEFAULT_DOWNLOAD_LOCATION = new("Downloads", "Downloads");
     
     private static LocalStorage? instance;
-    private string _basePath;
     private List<Post>? _localPosts;
     private CollectionHolder? _localCollections;
 
     private LocalStorage()
-    {
-        _basePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StlSpy");
-
-        if (!Directory.Exists(_basePath))
-            Directory.CreateDirectory(_basePath);
-    }
+    { }
     public static LocalStorage Get() => instance ??= new();
     
     private string GetPath(string uid)
     {
-        string fullPath = Path.Join(_basePath, "Posts", uid.Replace(':', '_'));
-        
-        if (!Directory.Exists(fullPath))
-            Directory.CreateDirectory(fullPath);
+        List<string> paths = Settings.Get().GetLocalCollectionPaths();
 
-        return fullPath;
+        foreach (var path in paths)
+        {
+            string currentPath = Path.Join(path, uid.Replace(':', '_'));
+            if (File.Exists(Path.Join(currentPath, "data.json")))
+                return currentPath;
+        }
+        
+        return Path.Join(paths.First(), uid.Replace(':', '_'));
     }
     
     public async Task<string?> GetFilesPath(Post post)
@@ -56,8 +55,7 @@ public class LocalStorage : ICollectionStorage
 
     public bool AreFilesCached(string uid)
     {
-        string fullPath = Path.Join(_basePath, "Posts", uid.Replace(':', '_'), "Files");
-        return Directory.Exists(fullPath);
+        return File.Exists(Path.Join(GetPath(uid), "data.json"));
     }
 
     public async Task<string?> GetImagesPath(Post post)
@@ -80,6 +78,9 @@ public class LocalStorage : ICollectionStorage
     private async Task SavePostLocally(Post post)
     {
         string fullPath = GetPath(post.UniversalId);
+
+        if (!Directory.Exists(fullPath))
+            Directory.CreateDirectory(fullPath);
 
         await GetFilesPath(post);
         await GetImagesPath(post);
@@ -115,6 +116,7 @@ public class LocalStorage : ICollectionStorage
             return null;
 
         LocalPost post = JsonConvert.DeserializeObject<LocalPost>(await File.ReadAllTextAsync(dataPath))!;
+        post.FolderPath = Path.GetDirectoryName(dataPath);
         return LocalToPost(post);
     }
 
@@ -149,7 +151,7 @@ public class LocalStorage : ICollectionStorage
     
     private Post LocalToPost(LocalPost local)
     {
-        string fullPath = GetPath(local.UniversalId);
+        string fullPath = local.FolderPath ?? GetPath(local.UniversalId);
 
         List<ApiFile> images = Directory.EnumerateFiles(Path.Join(fullPath, "Images")).Select(x => new ApiFile()
         {
@@ -198,17 +200,18 @@ public class LocalStorage : ICollectionStorage
         if (_localPosts != null && !force)
             return _localPosts;
         
-        string basePath = Path.Join(_basePath, "Posts");
-
-        if (!Directory.Exists(basePath))
-            return new();
-
-
+        List<string> paths = Settings.Get().GetLocalCollectionPaths();
         List<Post?> posts = new();
-
-        foreach (var x in Directory.EnumerateDirectories(basePath).Where(x => File.Exists(Path.Join(x, "data.json"))))
+        
+        foreach (var path in paths)
         {
-            posts.Add(await LocalToPost(Path.Join(x, "data.json")));
+            if (!Directory.Exists(path))
+                continue;
+            
+            foreach (var x in Directory.EnumerateDirectories(path).Where(x => File.Exists(Path.Join(x, "data.json"))))
+            {
+                posts.Add(await LocalToPost(Path.Join(x, "data.json")));
+            }
         }
 
         _localPosts = posts.Where(x => x != null).Select(x => x!).ToList();
@@ -220,7 +223,7 @@ public class LocalStorage : ICollectionStorage
         if (_localCollections != null)
             return _localCollections;
         
-        string dataPath = Path.Join(_basePath, "local.json");
+        string dataPath = Path.Join(Settings.ConfigPath, "local.json");
         if (!File.Exists(dataPath))
             _localCollections = new();
         else
@@ -234,7 +237,7 @@ public class LocalStorage : ICollectionStorage
         if (_localCollections == null)
             return;
         
-        string dataPath = Path.Join(_basePath, "local.json");
+        string dataPath = Path.Join(Settings.ConfigPath, "local.json");
         await File.WriteAllTextAsync(dataPath, JsonConvert.SerializeObject(_localCollections));
     }
     

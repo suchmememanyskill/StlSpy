@@ -1,0 +1,16 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="StlSpy.Views.SettingsView">
+    <StackPanel Spacing="10" Width="600" Name="StackPanel" Margin="20">
+        <DockPanel LastChildFill="True">
+            <Label DockPanel.Dock="Left" VerticalAlignment="Center" Margin="0,0,10,0">Local Collection Path</Label>
+            <Button DockPanel.Dock="Right" Name="LocalCollectionPathBrowse" Margin="10,0,0,0">Browse</Button>
+            <TextBox Name="LocalCollectionPath" />
+        </DockPanel>
+        
+        <Button HorizontalAlignment="Center" Name="Save">Save</Button>
+    </StackPanel>
+</UserControl>

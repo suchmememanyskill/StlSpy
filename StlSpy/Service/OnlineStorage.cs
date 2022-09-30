@@ -11,14 +11,13 @@ namespace StlSpy.Service;
 
 public class OnlineStorage : ICollectionStorage
 {
-    private string _basePath = Path.Join(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "StlSpy");
     private string _collectionsStoragePath;
     private static OnlineStorage? _instance;
     private Dictionary<string, string>? _onlineCollections;
 
     private OnlineStorage()
     {
-        _collectionsStoragePath = Path.Join(_basePath, "online.json");
+        _collectionsStoragePath = Path.Join(Settings.ConfigPath, "online.json");
     }
     public static OnlineStorage Get() => _instance ??= new();
     

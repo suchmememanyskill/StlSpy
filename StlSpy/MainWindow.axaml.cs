@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -83,6 +84,14 @@ namespace StlSpy
             localCollectionItems.Add(new("New Custom Post", () => SetView(new NewPostView())));
             
             StackPanel.Children.Add(new MenuButton(localCollectionItems, "Local Collections"));
+
+            Button button = new();
+            button.Content = "Settings";
+            button.FontSize = 16;
+            button.Padding = new Thickness(8, 4);
+            button.Command = new LambdaCommand(_ => SetView(new SettingsView()));
+            
+            StackPanel.Children.Add(button);
         }
 
         public void SetContent(IControl control)
@@ -100,6 +109,7 @@ namespace StlSpy
 
             MainText.Content = view.MainText();
             SubText.Content = view.SubText();
+            view.RegisterTopBarRefreshHandle(SetTopButtons);
         }
 
         public void ChangeViewToSortType(ApiDescription api, SortType sort)
