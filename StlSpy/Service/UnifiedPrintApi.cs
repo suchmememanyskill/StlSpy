@@ -57,6 +57,12 @@ public class UnifiedPrintApi
             await Request.GetStringAsync(new Uri($"{SITE}/Saved/{token}")))!;
     }
 
+    public static async Task<OnlineCollectionUids> GetOnlineCollectionUids(string token)
+    {
+        return JsonConvert.DeserializeObject<OnlineCollectionUids>(
+            await Request.GetStringAsync(new Uri($"{SITE}/Saved/{token}/uids")))!;
+    }
+    
     public static async Task<string> NewOnlineCollection(string name)
     {
         return await Request.PostStringAsync(new Uri($"{SITE}/Saved"),

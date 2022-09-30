@@ -29,6 +29,12 @@ public class OnlineCollection
     public List<Post> Posts { get; set; }
 }
 
+public class OnlineCollectionUids
+{
+    public string CollectionName { get; set; }
+    public List<string> UIDs { get; set; }
+}
+
 public class GenericCollection
 {
     public CollectionId Name;

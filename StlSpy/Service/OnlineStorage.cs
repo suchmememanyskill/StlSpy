@@ -82,12 +82,12 @@ public class OnlineStorage : ICollectionStorage
 
     public async Task<bool> IsPostPartOfCollection(string uid, CollectionId id)
     {
-        var posts = await GetPosts(id);
+        var posts = await UnifiedPrintApi.GetOnlineCollectionUids(id.Id);
 
         if (posts == null)
             return false;
         
-        return posts.Posts.Any(x => x.UniversalId == uid);
+        return posts.UIDs.Contains(uid);
     }
 
     public string Name() => "Online Collection";
