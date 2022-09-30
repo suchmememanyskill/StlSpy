@@ -30,12 +30,39 @@ public static class Buttons
     {
         // TODO: Give a popup on removal
         postView.SetCustomisableButtonsStatus(false);
+        AppTask task;
         
         if (storage.AreFilesCached(postView.Post.UniversalId))
-            await storage.DeleteLocalPost(postView.Post.UniversalId);
-        else
-            await storage.AddPost(LocalStorage.DEFAULT_DOWNLOAD_LOCATION, postView.Post);
+        {
+            task = new($"Removing {postView.Post.Name}");
+            await task.WaitUntilReady();
+            
+            try
+            {
+                await storage.DeleteLocalPost(postView.Post.UniversalId);
+            }
+            catch (Exception e)
+            {
+                await Utils.ShowMessageBox("Fail", $"Failed to delete post from local storage.\n{e.Message}");
+            }
+        }
 
+        else
+        {
+            task = new($"Adding {postView.Post.Name} to Downloads");
+            await task.WaitUntilReady();
+            
+            try
+            {
+                await storage.AddPost(LocalStorage.DEFAULT_DOWNLOAD_LOCATION, postView.Post);
+            }
+            catch (Exception e)
+            {
+                await Utils.ShowMessageBox("Fail", $"Failed to add post to downloads collection.\n{e.Message}");
+            }
+        }
+        
+        task.Complete();
         onCompletion?.Invoke(postView);
     }
 
@@ -113,8 +140,20 @@ public static class Buttons
         Action<PostView>? onCompletion = null)
     {
         postView.SetCustomisableButtonsStatus(false);
-        await storage.AddPost(token, postView.Post);
+        AppTask task = new($"Adding {postView.Post.Name} to {token.Name}");
+        await task.WaitUntilReady();
+        
+        try
+        {
+            await storage.AddPost(token, postView.Post);
+        }
+        catch (Exception e)
+        {
+            await Utils.ShowMessageBox("Fail", $"Failed to add post to collection.\n{e.Message}");
+        }
+        
         onCompletion?.Invoke(postView);
+        task.Complete();
     }
 
     public static async Task<MenuButton> AddAllToCollection(Func<Task<GenericCollection?>> getPosts, Action? onStartInvoke,
@@ -140,6 +179,8 @@ public static class Buttons
         Action? onEndInvoke, ICollectionStorage storage, CollectionId target)
     {
         onStartInvoke?.Invoke();
+        AppTask task = new($"Adding multiple posts to {target.Name}");
+        await task.WaitUntilReady();
 
         var posts = await getPosts();
 
@@ -149,6 +190,8 @@ public static class Buttons
         int successfulCount = 0;
         int skippedCount = 0;
         int nonSuccessfulCount = 0;
+        int totalDone = 0;
+        int totalPosts = posts.Posts.Count;
 
         var collection = await storage.GetPosts(target);
 
@@ -157,6 +200,9 @@ public static class Buttons
         
         foreach (var post in posts.Posts)
         {
+            totalDone++;
+            task.Progress = ((float)totalDone / totalPosts) * 100;
+            task.TextProgress = $"{totalDone}/{totalPosts}";
             if (collection.Posts.Any(x => post.UniversalId == x.UniversalId))
             {
                 skippedCount++;
@@ -177,6 +223,7 @@ public static class Buttons
         await Utils.ShowMessageBox("Transfer done",
             $"Successfully added {successfulCount} posts to {target.Name}. {skippedCount} posts were skipped, {nonSuccessfulCount} posts failed");
         
+        task.Complete();
         onEndInvoke?.Invoke();
     }
 
