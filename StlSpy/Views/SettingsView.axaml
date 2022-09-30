@@ -11,6 +11,8 @@
             <TextBox Name="LocalCollectionPath" />
         </DockPanel>
         
+        <CheckBox Name="HidePrintedLabel">Hide 'Printed' Labels On Preview Posts</CheckBox>
+        
         <Button HorizontalAlignment="Center" Name="Save">Save</Button>
     </StackPanel>
 </UserControl>

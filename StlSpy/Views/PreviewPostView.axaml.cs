@@ -9,6 +9,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Threading;
 using StlSpy.Extensions;
 using StlSpy.Model.PostsEndpoint;
+using StlSpy.Service;
 using StlSpy.Utils;
 
 namespace StlSpy.Views
@@ -20,6 +21,7 @@ namespace StlSpy.Views
         private bool _downloadedImage = false;
 
         [Binding(nameof(Panel), "Background")] 
+        [Binding(nameof(CheckboxBorder), "Background")]
         public IBrush Color => Api.GetColorAsBrush();
 
         [Binding(nameof(Title), "Content")] 
@@ -48,13 +50,25 @@ namespace StlSpy.Views
         
         public PreviewPostView(PreviewPost previewPost, ApiDescription api)
         {
-            
             Post = previewPost;
             Api = api;
             InitializeComponent();
             SetControls();
             UpdateView();
             EffectiveViewportChanged += EffectiveViewportChangedReact;
+
+            CheckboxBorder.IsVisible = !Settings.Get().HidePrintedLabel;
+
+            if (CheckboxBorder.IsVisible)
+            {
+                CheckBox.IsChecked = Settings.Get().ContainsPrintedUid(Post.UniversalId);
+            
+                CheckBox.Checked += (_, _) =>
+                    Settings.Get().AddPrintedUid(Post.UniversalId);
+            
+                CheckBox.Unchecked += (_, _) =>
+                    Settings.Get().RemovePrintedUid(Post.UniversalId);
+            }
         }
 
         public PreviewPostView()

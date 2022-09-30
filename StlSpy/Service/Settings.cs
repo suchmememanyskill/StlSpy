@@ -38,6 +38,8 @@ public class Settings
     }
 
     public string CustomLocalCollectionsPath { get; set; } = "";
+    public bool HidePrintedLabel { get; set; } = false;
+    public List<string> PrintedUids { get; set; } = new();
 
     public List<string> GetLocalCollectionPaths()
     {
@@ -63,4 +65,24 @@ public class Settings
         string path = Path.Join(ConfigPath, "settings.json");
         File.WriteAllText(path, JsonConvert.SerializeObject(this));
     }
+
+    public void AddPrintedUid(string uid)
+    {
+        if (!PrintedUids.Contains(uid))
+        {
+            PrintedUids.Add(uid);
+            Save();
+        }
+    }
+
+    public void RemovePrintedUid(string uid)
+    {
+        if (PrintedUids.Contains(uid))
+        {
+            PrintedUids.Remove(uid);
+            Save();
+        }
+    }
+
+    public bool ContainsPrintedUid(string uid) => PrintedUids.Contains(uid);
 }

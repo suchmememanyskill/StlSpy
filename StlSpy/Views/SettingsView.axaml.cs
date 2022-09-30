@@ -18,6 +18,7 @@ public partial class SettingsView : UserControlExt<SettingsView>, IMainView
         InitializeComponent();
         SetControls();
         LocalCollectionPath.Text = _settings.CustomLocalCollectionsPath;
+        HidePrintedLabel.IsChecked = _settings.HidePrintedLabel;
     }
 
     public string MainText() => "Settings";
@@ -30,6 +31,7 @@ public partial class SettingsView : UserControlExt<SettingsView>, IMainView
     public async void SaveSettings()
     {
         _settings.CustomLocalCollectionsPath = LocalCollectionPath.Text ?? "";
+        _settings.HidePrintedLabel = HidePrintedLabel.IsChecked!.Value;
         _settings.Save();
         await Utils.Utils.ShowMessageBox("Settings", "Saved settings");
     }
