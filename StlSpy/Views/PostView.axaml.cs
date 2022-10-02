@@ -16,13 +16,14 @@ namespace StlSpy.Views
     {
         public Post Post { get; private set; }
         private int _imagePage = 0;
+        private bool _local = false;
         public event Action<PostView> OnInitialised; 
 
         [Binding(nameof(PostName), "Content")] 
         public string PostNameText => Post.Name;
 
         [Binding(nameof(PostAuthor), "Content")]
-        public string PostAuthorText => $"By {Post.Author.Name}, Published {Post.Added:MMMM dd, yyyy}";
+        public string PostAuthorText => (_local) ? $"By {Post.Author.Name}, Added to collection on {Post.Added:MMMM dd, yyyy}" : $"By {Post.Author.Name}, Published {Post.Added:MMMM dd, yyyy}";
 
         [Binding(nameof(PostDescription), "Text")]
         public string PostDescriptionText => Post.Description;
@@ -43,6 +44,7 @@ namespace StlSpy.Views
 
         public PostView(Post post) : this()
         {
+            _local = true;
             Post = post;
             Init();
         }
