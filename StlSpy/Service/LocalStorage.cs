@@ -123,8 +123,18 @@ public class LocalStorage : ICollectionStorage
         string dataPath = Path.Join(fullPath, "data.json");
         if (!File.Exists(dataPath))
             await File.WriteAllTextAsync(dataPath, JsonConvert.SerializeObject(local));
-        
-        await GetAllLocalPosts(true);
+
+        if (_localPosts == null)
+        {
+            await GetAllLocalPosts(true);
+        }
+        else
+        {
+            if (_localPosts.All(x => x.UniversalId != local.UniversalId))
+            {
+                _localPosts.Add(LocalToPost(local));
+            }
+        }
     }
 
     private async Task<Post?> LocalToPost(string dataPath)
@@ -262,7 +272,18 @@ public class LocalStorage : ICollectionStorage
     {
         string fullPath = GetPath(uid);
         Directory.Delete(fullPath, true);
-        await GetAllLocalPosts(true);
+        
+        if (_localPosts == null)
+        {
+            await GetAllLocalPosts(true);
+        }
+        else
+        {
+            Post? post = _localPosts.Find(x => x.UniversalId == uid);
+
+            if (post != null)
+                _localPosts.Remove(post);
+        }
     }
 
     public async Task<List<Post>> GetPosts()
