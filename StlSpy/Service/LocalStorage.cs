@@ -36,18 +36,23 @@ public class LocalStorage : ICollectionStorage
         return Path.Join(paths.First(), uid.Replace(':', '_'));
     }
     
-    public async Task<string?> GetFilesPath(Post post)
+    public async Task<string?> GetFilesPath(Post post, IProgress<float>? progress = null)
     {
         string fullPath = Path.Join(GetPath(post.UniversalId), "Files");
         
         if (!Directory.Exists(fullPath))
             Directory.CreateDirectory(fullPath);
 
+        int total = post.Downloads.Count;
+        int current = 0;
         foreach (var x in post.Downloads)
         {
             string individualPath = Path.Join(fullPath, x.Name);
             if (!File.Exists(individualPath))
                 await File.WriteAllBytesAsync(individualPath, await x.Get());
+
+            current++;
+            progress?.Report((float)current / total * 100);
         }
 
         return fullPath;
@@ -58,32 +63,40 @@ public class LocalStorage : ICollectionStorage
         return File.Exists(Path.Join(GetPath(uid), "data.json"));
     }
 
-    public async Task<string?> GetImagesPath(Post post)
+    public async Task<string?> GetImagesPath(Post post, IProgress<float>? progress = null)
     {
         string fullPath = Path.Join(GetPath(post.UniversalId), "Images");
         
         if (!Directory.Exists(fullPath))
             Directory.CreateDirectory(fullPath);
 
+        int total = post.Images.Count;
+        int current = 0;
         foreach (var x in post.Images)
         {
             string individualPath = Path.Join(fullPath, x.Name);
             if (!File.Exists(individualPath))
                 await File.WriteAllBytesAsync(individualPath, await x.Get());
+
+            current++;
+            progress?.Report((float)current / total * 100);
         }
 
         return fullPath;
     }
 
-    private async Task SavePostLocally(Post post)
+    private async Task SavePostLocally(Post post, IProgress<float>? progress = null)
     {
         string fullPath = GetPath(post.UniversalId);
 
         if (!Directory.Exists(fullPath))
             Directory.CreateDirectory(fullPath);
 
-        await GetFilesPath(post);
-        await GetImagesPath(post);
+        Progress<float> files = new(x => progress?.Report(x / 100 * 40)); // 0% -> 40%
+        Progress<float> images = new(x => progress?.Report(x / 100 * 40 + 40)); // 40% -> 80%
+
+        await GetFilesPath(post, files);
+        await GetImagesPath(post, images);
 
         string thumbnailPath = Path.Join(fullPath, "thumbnail.jpg");
         if (!File.Exists(thumbnailPath))
@@ -93,6 +106,8 @@ public class LocalStorage : ICollectionStorage
                 await File.WriteAllBytesAsync(thumbnailPath, thumbnail);
         }
         
+        progress?.Report(90);
+        
         string authorPath = Path.Join(fullPath, "author.jpg");
         if (!File.Exists(authorPath))
         {
@@ -100,6 +115,8 @@ public class LocalStorage : ICollectionStorage
             if (thumbnail != null)
                 await File.WriteAllBytesAsync(authorPath, thumbnail);
         }
+        
+        progress?.Report(100);
 
         LocalPost local = new(post);
 
@@ -283,7 +300,7 @@ public class LocalStorage : ICollectionStorage
         await SaveLocalCollections();
     }
 
-    public async Task AddPost(CollectionId id, Post post)
+    public async Task AddPost(CollectionId id, Post post, IProgress<float>? progress = null)
     {
         CollectionHolder collections = await GetLocalCollections();
         Collection? collection = collections.Collections.Find(x => x.Name == id.Name);
@@ -293,7 +310,7 @@ public class LocalStorage : ICollectionStorage
 
         if (!AreFilesCached(post.UniversalId))
         {
-            await SavePostLocally(post);
+            await SavePostLocally(post, progress);
         }
         
         if (!collection.UIDs.Contains(post.UniversalId))

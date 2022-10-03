@@ -54,10 +54,13 @@ public class OnlineStorage : ICollectionStorage
 
     public async Task RemovePost(CollectionId id, string uid)
         => await UnifiedPrintApi.RemoveFromOnlineCollection(id.Id, uid);
-    
 
-    public async Task AddPost(CollectionId id, Post post)
-        => await UnifiedPrintApi.AddToOnlineCollection(id.Id, post.UniversalId);
+
+    public async Task AddPost(CollectionId id, Post post, IProgress<float>? progress = null)
+    {
+        await UnifiedPrintApi.AddToOnlineCollection(id.Id, post.UniversalId);
+        progress?.Report(100);
+    }
 
     public async Task<CollectionId> AddCollection(string name)
     {

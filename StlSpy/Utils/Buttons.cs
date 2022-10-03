@@ -30,11 +30,10 @@ public static class Buttons
     {
         // TODO: Give a popup on removal
         postView.SetCustomisableButtonsStatus(false);
-        AppTask task;
-        
+
         if (storage.AreFilesCached(postView.Post.UniversalId))
         {
-            task = new($"Removing {postView.Post.Name}");
+            AppTask task = new($"Removing {postView.Post.Name}");
             await task.WaitUntilReady();
             
             try
@@ -45,24 +44,15 @@ public static class Buttons
             {
                 await Utils.ShowMessageBox("Fail", $"Failed to delete post from local storage.\n{e.Message}");
             }
+            
+            task.Complete();
         }
-
         else
         {
-            task = new($"Adding {postView.Post.Name} to Downloads");
-            await task.WaitUntilReady();
-            
-            try
-            {
-                await storage.AddPost(LocalStorage.DEFAULT_DOWNLOAD_LOCATION, postView.Post);
-            }
-            catch (Exception e)
-            {
-                await Utils.ShowMessageBox("Fail", $"Failed to add post to downloads collection.\n{e.Message}");
-            }
+            HandleAddToCollection(postView.Post, LocalStorage.DEFAULT_DOWNLOAD_LOCATION, storage, () => onCompletion?.Invoke(postView));
+            return;
         }
         
-        task.Complete();
         onCompletion?.Invoke(postView);
     }
 
@@ -128,7 +118,12 @@ public static class Buttons
             new(
                 convertedCollections.Select(x =>
                     (!x.Item2)
-                        ? new Command(x.Item1.Name, () => HandleAddToCollection(postView, x.Item1, storage, onCompletion))
+                        ? new Command(x.Item1.Name, () =>
+                        {
+                            postView.SetCustomisableButtonsStatus(false);
+                            HandleAddToCollection(postView.Post, x.Item1, storage,
+                                () => onCompletion?.Invoke(postView));
+                        })
                         : new Command(x.Item1.Name)), $"Add to {storage.Name()}");
 
         button.SetFontSize(14);
@@ -136,23 +131,24 @@ public static class Buttons
         return button;
     }
     
-    private static async void HandleAddToCollection(PostView postView, CollectionId token, ICollectionStorage storage,
-        Action<PostView>? onCompletion = null)
+    private static async void HandleAddToCollection(Post post, CollectionId token, ICollectionStorage storage,
+        Action? onCompletion = null)
     {
-        postView.SetCustomisableButtonsStatus(false);
-        AppTask task = new($"Adding {postView.Post.Name} to {token.Name}");
+        AppTask task = new($"Adding {post.Name} to {token.Name}");
         await task.WaitUntilReady();
-        
+
+        Progress<float> progress = new(x => task.Progress = x);
+
         try
         {
-            await storage.AddPost(token, postView.Post);
+            await storage.AddPost(token, post, progress);
         }
         catch (Exception e)
         {
             await Utils.ShowMessageBox("Fail", $"Failed to add post to collection.\n{e.Message}");
         }
         
-        onCompletion?.Invoke(postView);
+        onCompletion?.Invoke();
         task.Complete();
     }
 
@@ -197,6 +193,15 @@ public static class Buttons
 
         if (collection == null)
             return;
+
+        Progress<float> progress = new(x =>
+        {
+            string text = task.TextProgress;
+            if (text.Contains('('))
+                text = text.Split('(').First().Trim();
+
+            task.TextProgress = $"{text} ({x:0.0}%)";
+        });
         
         foreach (var post in posts.Posts)
         {
@@ -211,7 +216,7 @@ public static class Buttons
 
             try
             {
-                await storage.AddPost(target, post);
+                await storage.AddPost(target, post, progress);
                 successfulCount++;
             }
             catch
