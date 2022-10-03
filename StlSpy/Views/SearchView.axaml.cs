@@ -125,7 +125,17 @@ namespace StlSpy.Views
 
         private async Task<List<PreviewPostView>> GetUidPosts()
         {
-            List<string> filteredUids = _query.Split(',').Where(x => x.Contains(':')).Select(x => x.Trim()).Distinct().ToList();
+            List<string> filteredUids = _query.Split(',').Select(x =>
+            {
+                if (x.StartsWith("https://www.thingiverse.com/thing:"))
+                    return $"thingiverse:{x.Split(':').Last()}";
+                if (x.StartsWith("https://www.myminifactory.com/object/"))
+                    return $"myminifactory:{x.Split('-').Last()}";
+                if (x.StartsWith("https://www.printables.com/model"))
+                    return $"prusa-printables:{x.Split('/').Last().Split('-').First()}";
+
+                return x;
+            }).Where(x => x.Contains(':')).Select(x => x.Trim()).Distinct().ToList();
             List<Post> posts = new();
 
             foreach (var filteredUid in filteredUids)
