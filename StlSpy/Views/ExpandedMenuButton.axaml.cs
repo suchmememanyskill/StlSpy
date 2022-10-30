@@ -15,6 +15,7 @@ namespace StlSpy.Views;
 
 public partial class ExpandedMenuButton : UserControl
 {
+    public event Action<string>? OnButtonPress;
     private List<Control> _items = new();
         
     public ExpandedMenuButton()
@@ -35,12 +36,14 @@ public partial class ExpandedMenuButton : UserControl
         Items.Children.AddRange(_items.ToList());
     }
 
-    public ExpandedMenuButton(IEnumerable<Command> items, string header)
-        : this(items.Select(CommandToControl), header)
+    public ExpandedMenuButton(IEnumerable<Command> items, string header) 
+        : this(header)
     {
+        _items = items.Select(CommandToControl).ToList();
+        Items.Children.AddRange(_items.ToList());
     }
 
-    private static Control CommandToControl(Command c)
+    private Control CommandToControl(Command c)
     {
         switch (c.Type)
         {
@@ -77,7 +80,11 @@ public partial class ExpandedMenuButton : UserControl
                 return new Button()
                 {
                     Content = c.Text,
-                    Command = new LambdaCommand(_ => c.Action?.Invoke()),
+                    Command = new LambdaCommand(_ =>
+                    {
+                        c.Action?.Invoke();
+                        OnButtonPress?.Invoke(c.Text!);
+                    }),
                     HorizontalAlignment = HorizontalAlignment.Left,
                     Background = Brushes.Transparent,
                     FontSize = 14,

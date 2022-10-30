@@ -11,7 +11,7 @@
             <DockPanel>
                 <StackPanel DockPanel.Dock="Top" Spacing="0" Margin="3,0">
                     <Label Name="MainText" FontWeight="Bold" HorizontalAlignment="Center" FontSize="20" Content="StlSpy" />
-                    <Label Name="SubText" FontSize="16" HorizontalAlignment="Center" />
+                    <Label Name="SubText" FontSize="16" HorizontalAlignment="Center" Content="" />
                 </StackPanel>
                 <views:TaskProgressView DockPanel.Dock="Bottom" />
                 <ScrollViewer>

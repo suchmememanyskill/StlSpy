@@ -1,0 +1,36 @@
+﻿<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        x:Class="StlSpy.PostDetailsWindow"
+        Title="PostDetailsWindow"
+        SizeToContent="WidthAndHeight"
+        CanResize="False"
+        Name="Window">
+    <ScrollViewer Name="TopElement" MaxHeight="1000" MinHeight="200">
+        <Border Background="#202020" Width="800" Padding="10">
+            <Panel Name="MainPanel" IsVisible="False">
+                <StackPanel Spacing="10">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
+                        <Image Name="AuthorImage" Height="50" Width="50" />
+                        <StackPanel>
+                            <Button Name="PostName" Classes="invisible url" Padding="5,0" FontSize="20" />
+                            <Button Name="PostAuthor" Classes="invisible url" Padding="5,0" FontSize="16" />
+                        </StackPanel>
+                    </StackPanel>
+                
+                    <Panel Width="790" Height="600">
+                        <Image Width="790" Height="600" Name="MainImage" />
+                        <Button Classes="darker" FontSize="25" IsVisible="False" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="10" Name="LeftImageButton">&lt;</Button>
+                        <Button Classes="darker" FontSize="25" IsVisible="False" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="10" Name="RightImageButton">&gt;</Button>
+                    </Panel>
+                    
+                    <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Name="CustomisableButtons" />
+                    
+                    <TextBlock FontSize="14" Margin="10,0" Name="PostDescription" TextWrapping="Wrap" />
+                </StackPanel>
+            </Panel>
+        </Border>
+    </ScrollViewer>
+</Window>

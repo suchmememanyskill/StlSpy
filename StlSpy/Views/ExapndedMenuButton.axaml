@@ -4,9 +4,9 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="StlSpy.Views.ExpandedMenuButton">
-    <Border Background="#22000000" CornerRadius="2">
+    <Border Background="#44000000" CornerRadius="2">
         <StackPanel Spacing="5">
-            <Label FontWeight="Bold" HorizontalAlignment="Center" Name="Header" />
+            <Label FontWeight="Bold" HorizontalAlignment="Center" Name="Header" Margin="5,0" />
             <StackPanel Name="Items" Margin="5" Spacing="3" />
         </StackPanel>
     </Border>

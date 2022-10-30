@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -85,6 +86,12 @@ namespace StlSpy.Views
                 CheckBox.Unchecked += (_, _) =>
                     Settings.Get().RemovePrintedUid(Post.UniversalId);
             }
+
+            PointerPressed += (sender, args) =>
+            {
+                if (args.ClickCount == 2)
+                    OpenPostDetails();
+            };
         }
 
         public PreviewPostView()
@@ -101,11 +108,11 @@ namespace StlSpy.Views
             DownloadImage();
         }
 
-        private async Task<List<Command>> GetAddToCollectionList(ICollectionStorage storage)
+        public async Task<List<Command>> GetAddToCollectionList(ICollectionStorage storage)
         {
             List<Command> commands = new()
             {
-                new($"Add/Remove to {storage.Name()} Storage")
+                new($"Add/Remove to {storage.Name()}")
             };
 
             List<CollectionId> collections = await storage.GetCollections();
@@ -120,6 +127,12 @@ namespace StlSpy.Views
             return commands;
         }
 
+        private async void OpenPostDetails()
+        {
+            PostDetailsWindow window = new(this);
+            window.Show(MainWindow.Window!);
+        }
+
         private async void RemovePostFromCollection(Post? post, ICollectionStorage storage, CollectionId collection)
         {
             post ??= await ConvertToPost();
@@ -131,9 +144,10 @@ namespace StlSpy.Views
         {
             List<Command> commands = new()
             {
+                new("Show Details", OpenPostDetails),
                 new($"Post: {Post.Name}", () => Utils.Utils.OpenUrl(Post.Website)),
                 new($"By: {Post.Author.Name}", () => Utils.Utils.OpenUrl(Post.Author.Website)),
-                new("Copy Universal ID", CopyUID),
+                new("Copy Universal ID to Clipboard", CopyUID),
                 new(),
                 new("Open in"),
                 new("PrusaSlicer", OpenInPrusaSlicer),
@@ -151,10 +165,9 @@ namespace StlSpy.Views
         private async void CopyUID()
         {
             await ClipboardService.SetTextAsync(Post.UniversalId);
-            await Utils.Utils.ShowMessageBox("Clipboard", "Copied Universal ID to clipboard");
         }
 
-        private async Task<Post> ConvertToPost()
+        public async Task<Post> ConvertToPost()
         {
             LocalStorage storage = LocalStorage.Get();
             Post? post = await storage.GetPost(Post.UniversalId);
@@ -192,7 +205,7 @@ namespace StlSpy.Views
             return (await storage.GetFilesPath(post))!;
         }
 
-        private async void OpenInPrusaSlicer()
+        public async void OpenInPrusaSlicer()
         {
             string path = await DownloadPost();
             
@@ -203,7 +216,7 @@ namespace StlSpy.Views
                 await Utils.Utils.ShowMessageBox(":(", "Failed to open PrusaSlicer");
         }
 
-        private async void OpenInExplorer()
+        public async void OpenInExplorer()
         {
             string path = await DownloadPost();
             Utils.Utils.OpenFolder(path);
