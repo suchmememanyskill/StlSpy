@@ -101,7 +101,7 @@ namespace StlSpy.Views
             DownloadImage();
         }
 
-        private async Task<List<Command>> GetAddToCollectionList(Post post, ICollectionStorage storage)
+        private async Task<List<Command>> GetAddToCollectionList(ICollectionStorage storage)
         {
             List<Command> commands = new()
             {
@@ -111,25 +111,24 @@ namespace StlSpy.Views
             List<CollectionId> collections = await storage.GetCollections();
             foreach (var collection in collections)
             {
-                if (await storage.IsPostPartOfCollection(post.UniversalId, collection))
-                    commands.Add(new($"Remove from {collection.Name}", () => RemovePostFromCollection(post, storage, collection)));
+                if (await storage.IsPostPartOfCollection(Post.UniversalId, collection))
+                    commands.Add(new($"Remove from {collection.Name}", () => RemovePostFromCollection(null, storage, collection)));
                 else
-                    commands.Add(new($"Add to {collection.Name}", () => AddPostToCollection(post, storage, collection)));
+                    commands.Add(new($"Add to {collection.Name}", () => AddPostToCollection(null, storage, collection)));
             }
 
             return commands;
         }
 
-        private async void RemovePostFromCollection(Post post, ICollectionStorage storage, CollectionId collection)
+        private async void RemovePostFromCollection(Post? post, ICollectionStorage storage, CollectionId collection)
         {
+            post ??= await ConvertToPost();
             await storage.RemovePost(collection, post.UniversalId);
             OnNeedListReload?.Invoke();
         }
 
         private async void SetContextMenu()
         {
-            Post post = await ConvertToPost();
-            
             List<Command> commands = new()
             {
                 new($"Post: {Post.Name}", () => Utils.Utils.OpenUrl(Post.Website)),
@@ -137,14 +136,14 @@ namespace StlSpy.Views
                 new("Copy Universal ID", CopyUID),
                 new(),
                 new("Open in"),
-                new("PrusaSlicer", () => OpenInPrusaSlicer(post)),
-                new("Explorer", () => OpenInExplorer(post)),
+                new("PrusaSlicer", OpenInPrusaSlicer),
+                new("Explorer", OpenInExplorer),
                 new(),
             };
 
-            commands.AddRange(await GetAddToCollectionList(post, LocalStorage.Get()));
+            commands.AddRange(await GetAddToCollectionList(LocalStorage.Get()));
             commands.Add(new());
-            commands.AddRange(await GetAddToCollectionList(post, OnlineStorage.Get()));
+            commands.AddRange(await GetAddToCollectionList(OnlineStorage.Get()));
             
             _contextMenu.Items = commands.Select(x => x.ToTemplatedControl()).ToList();
         }
@@ -163,8 +162,9 @@ namespace StlSpy.Views
             return post;
         }
 
-        private async Task AddPostToCollection(Post post, ICollectionStorage storage, CollectionId collection)
+        private async Task AddPostToCollection(Post? post, ICollectionStorage storage, CollectionId collection)
         {
+            post ??= await ConvertToPost();
             AppTask task = new($"Adding {post.Name} to {collection.Name}");
             await task.WaitUntilReady();
             
@@ -182,8 +182,9 @@ namespace StlSpy.Views
             task.Complete();
         }
         
-        private async Task<string> DownloadPost(Post post)
+        private async Task<string> DownloadPost()
         {
+            Post post = await ConvertToPost();
             LocalStorage storage = LocalStorage.Get();
             if (!storage.AreFilesCached(post.UniversalId))
                 await AddPostToCollection(post, storage, LocalStorage.DEFAULT_DOWNLOAD_LOCATION);
@@ -191,9 +192,9 @@ namespace StlSpy.Views
             return (await storage.GetFilesPath(post))!;
         }
 
-        private async void OpenInPrusaSlicer(Post post)
+        private async void OpenInPrusaSlicer()
         {
-            string path = await DownloadPost(post);
+            string path = await DownloadPost();
             
             bool result = Utils.Utils.OpenPrusaSlicer(Directory.EnumerateFiles(path)
                 .Where(x => new List<string>() { ".stl", ".obj", ".3mf" }.Any(y => x.ToLower().EndsWith(y))).ToList());
@@ -202,9 +203,9 @@ namespace StlSpy.Views
                 await Utils.Utils.ShowMessageBox(":(", "Failed to open PrusaSlicer");
         }
 
-        private async void OpenInExplorer(Post post)
+        private async void OpenInExplorer()
         {
-            string path = await DownloadPost(post);
+            string path = await DownloadPost();
             Utils.Utils.OpenFolder(path);
         }
     }
