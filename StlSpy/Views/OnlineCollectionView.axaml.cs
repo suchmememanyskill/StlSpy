@@ -120,7 +120,12 @@ namespace StlSpy.Views
         private async Task<List<PreviewPostView>> GetPosts()
         {
             OnlineStorage storage = OnlineStorage.Get();
-            return (await storage.GetPosts(_id))!.Posts.Select(x => new PreviewPostView(x, ApiDescription.GetLocalApiDescription())).ToList();
+            return (await storage.GetPosts(_id))!.Posts.Select(x =>
+            {
+                var post = new PreviewPostView(x, ApiDescription.GetLocalApiDescription());
+                post.OnNeedListReload += Get;
+                return post;
+            }).ToList();
         }
         
         private async Task<GenericCollection?> GetCollection()

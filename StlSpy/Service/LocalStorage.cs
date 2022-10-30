@@ -289,6 +289,9 @@ public class LocalStorage : ICollectionStorage
     public async Task<List<Post>> GetPosts()
         => await GetAllLocalPosts();
 
+    public async Task<Post?> GetPost(string uid)
+        => (await GetAllLocalPosts()).FirstOrDefault(x => x.UniversalId == uid);
+
     public async Task<GenericCollection?> GetPosts(CollectionId id)
     {
         CollectionHolder? collections = await GetLocalCollections();
