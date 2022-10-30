@@ -20,8 +20,7 @@ namespace StlSpy.Views
         private int _perPage = 20;
         private PreviewPostCollectionView _view;
         private string? _query;
-        private PostView? _postView;
-        
+
         public bool HasApi => (_api != null);
 
         [Binding(nameof(LeftArrow), "IsVisible")]
@@ -39,12 +38,6 @@ namespace StlSpy.Views
         {
             _api = api;
             _view = new();
-            _view.OnNewSelection += x =>
-            {
-                _postView = new PostView(x.Post.UniversalId);
-                _postView.OnInitialised += RespondToButtonRefresh;
-                SetControl(_postView);
-            };
             VerticalStackPanel.Children.Add(_view);
             SearchButton.Background = _api.GetColorAsBrush();
             Get();
@@ -54,12 +47,6 @@ namespace StlSpy.Views
         public SearchView(bool _) : this()
         {
             _view = new();
-            _view.OnNewSelection += x =>
-            {
-                _postView = new PostView(x.Post.UniversalId);
-                _postView.OnInitialised += RespondToButtonRefresh;
-                SetControl(_postView);
-            };
             VerticalStackPanel.Children.Add(_view);
             Get();   
             UpdateView();
@@ -73,32 +60,6 @@ namespace StlSpy.Views
                 _view.SetText("");
             
             UpdateView();
-        }
-        
-        private async void SetButtonsOnPostView()
-        {
-            var addToLocalCollection = await Buttons.AddToCollection(_postView!, LocalStorage.Get(), RespondToButtonRefresh);
-            var addToOnlineCollection = await Buttons.AddToCollection(_postView!, OnlineStorage.Get(), RespondToButtonRefresh);
-            
-            _postView?.SetCustomisableButtons(new()
-            {
-                Buttons.DownloadButton(_postView, RespondToButtonRefresh),
-                Buttons.OpenInButton(_postView, RespondToButtonRefresh),
-                addToOnlineCollection,
-                addToLocalCollection
-            });
-        }
-
-        private void RespondToButtonRefresh(PostView post)
-        {
-            if (post == _postView)
-                SetButtonsOnPostView();
-        }
-
-        public void SetControl(IControl control)
-        {
-            SidePanel.Children.Clear();
-            SidePanel.Children.Add(control);
         }
 
         private async Task<List<PreviewPostView>> GetApiPosts()

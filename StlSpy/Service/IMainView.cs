@@ -9,8 +9,4 @@ public interface IMainView : IControl
     public string MainText();
     public string SubText();
     public IBrush? HeaderColor();
-
-    public void RegisterTopBarRefreshHandle(Action refresh)
-    {
-    }
 }

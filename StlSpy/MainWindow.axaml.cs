@@ -108,7 +108,6 @@ namespace StlSpy
 
             MainText.Content = view.MainText();
             SubText.Content = view.SubText();
-            view.RegisterTopBarRefreshHandle(SetTopButtons);
         }
 
         public void ChangeViewToSortType(ApiDescription api, SortType sort)

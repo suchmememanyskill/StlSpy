@@ -20,7 +20,6 @@ namespace StlSpy.Views
     {
         private CollectionId _id;
         private PreviewPostCollectionView _view;
-        private PostView? _postView;
         private string _searchQuery = "";
 
         [Binding(nameof(DeleteCollection), "Content")]
@@ -37,13 +36,6 @@ namespace StlSpy.Views
             SetControls();
             UpdateView();
             _view = new();
-            _view.OnNewSelection += x =>
-            {
-                _postView = new PostView(x.Post.UniversalId);
-                
-                _postView.OnInitialised += RespondToButtonRefresh;
-                SetControl(_postView);
-            };
             VerticalStackPanel.Children.Add(_view);
             Get();
             
@@ -63,21 +55,7 @@ namespace StlSpy.Views
         {
             InitializeComponent();
         }
-        
-        private async void SetButtonsOnPostView()
-        {
-            var addToLocalCollection = await Buttons.AddToCollection(_postView!, LocalStorage.Get(), RespondToButtonRefresh);
-            var addToOnlineCollection = await Buttons.AddToCollection(_postView!, OnlineStorage.Get(), RespondToButtonRefresh);
-            
-            _postView?.SetCustomisableButtons(new()
-            {
-                Buttons.CreateButton($"Remove from {_id.Name}", OnRemove),
-                Buttons.OpenInButton(_postView, RespondToButtonRefresh),
-                addToOnlineCollection,
-                addToLocalCollection
-            });
-        }
-        
+
         private async void AddTopButtons()
         {
             MenuButton addToLocalCollections = await Buttons.AddAllToCollection(() => GetCollection(),
@@ -93,23 +71,6 @@ namespace StlSpy.Views
             {
                 Header.Children.Add(Buttons.DumpToJson(GetCollection, () => Header.IsEnabled = false, () => Header.IsEnabled = true));
             }
-        }
-
-        private async void OnRemove()
-        {
-            _postView?.SetCustomisableButtonsStatus(false);
-
-            OnlineStorage storage = OnlineStorage.Get();
-            await storage.RemovePost(_id, _postView?.Post.UniversalId ?? "");
-            
-            SetControl(null);
-            Get();
-        }
-
-        private void RespondToButtonRefresh(PostView post)
-        {
-            if (post == _postView)
-                SetButtonsOnPostView();
         }
 
         private async void Get()
@@ -130,13 +91,6 @@ namespace StlSpy.Views
         
         private async Task<GenericCollection?> GetCollection()
             => await OnlineStorage.Get().GetPosts(_id);
-        
-        public void SetControl(IControl? control)
-        {
-            SidePanel.Children.Clear();
-            if (control != null)
-                SidePanel.Children.Add(control);
-        }
 
         public string MainText() => "Online";
 
@@ -148,7 +102,6 @@ namespace StlSpy.Views
         public async void Delete()
         {
             _view.SetText($"Removed {_id.Name}");
-            SetControl(null);
             Header.IsVisible = false;
             
             OnlineStorage storage = OnlineStorage.Get();
