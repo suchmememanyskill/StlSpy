@@ -32,11 +32,16 @@ namespace StlSpy
             SetTopButtons();
 
             Label l = new();
-            l.Content = "Please click one of the buttons above to get started";
+            l.Content = "Please click one of the buttons on the left to get started";
             l.FontSize = 25;
             l.HorizontalAlignment = HorizontalAlignment.Center;
             l.VerticalAlignment = VerticalAlignment.Center;
             SetContent(l);
+            
+            LocalStorage storage = LocalStorage.Get();
+            AppTask task = new("Loading posts from disk");
+            await storage.GetPosts();
+            task.Complete();
         }
 
         public async void SetTopButtons()
@@ -50,7 +55,7 @@ namespace StlSpy
 
             _apis = await UnifiedPrintApi.PostsServices();
 
-            MenuButton sites = new(_apis.Select(x =>
+            ExpandedMenuButton sites = new(_apis.Select(x =>
             {
                 return new Command(x.Name, x.SortTypes.Select(y => new Command(y.DisplayName, () => ChangeViewToSortType(x, y))).ToList());
             }), "Sites");
@@ -62,7 +67,7 @@ namespace StlSpy
             searchCommands.Add(new Command());
             searchCommands.Add(new("Search for Universal IDs", () => ChangeViewToSearchType(null)));
 
-            MenuButton search = 
+            ExpandedMenuButton search = 
                 new(searchCommands, "Search");
             
             StackPanel.Children.Add(search);
@@ -74,7 +79,7 @@ namespace StlSpy
             onlineCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, OnlineStorage.Get(), true))));
             onlineCollectionItems.Add(new("Import Collection", () => ChangeViewToNewCollectionView(OnImportOnlineCollection, "Import", "Online Collection", "Enter Collection code here", "Import Collection")));
             
-            StackPanel.Children.Add(new MenuButton(onlineCollectionItems, "Online Collections"));
+            StackPanel.Children.Add(new ExpandedMenuButton(onlineCollectionItems, "Online Collections"));
             
             List<Command> localCollectionItems = (await localStorage.GetCollections())
                 .Select(x => new Command(x.Name, () => ChangeViewToLocalCollectionsType(x))).ToList();
@@ -83,15 +88,9 @@ namespace StlSpy
             localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, LocalStorage.Get(), false))));
             localCollectionItems.Add(new("New Custom Post", () => SetView(new NewPostView())));
             
-            StackPanel.Children.Add(new MenuButton(localCollectionItems, "Local Collections"));
+            StackPanel.Children.Add(new ExpandedMenuButton(localCollectionItems, "Local Collections"));
 
-            Button button = new();
-            button.Content = "Settings";
-            button.FontSize = 16;
-            button.Padding = new Thickness(8, 4);
-            button.Command = new LambdaCommand(_ => SetView(new SettingsView()));
-            
-            StackPanel.Children.Add(button);
+            StackPanel.Children.Add(new ExpandedMenuButton(new List<Command>(){new("Settings", () => SetView(new SettingsView()))}, "Misc"));
         }
 
         public void SetContent(IControl control)

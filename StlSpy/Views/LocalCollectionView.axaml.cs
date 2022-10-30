@@ -124,6 +124,12 @@ namespace StlSpy.Views
         private async Task<List<PreviewPostView>> GetPosts()
         {
             LocalStorage storage = LocalStorage.Get();
+            if (!storage.ArePostsLoaded())
+            {
+                AppTask load = new("Waiting until ready...");
+                await load.WaitUntilReady();
+                load.Complete();
+            }
             return (await storage.GetPosts(_id))!.Posts.OrderByDescending(x => x.Added).Select(x =>
             {
                 var post = new PreviewPostView(x, ApiDescription.GetLocalApiDescription());

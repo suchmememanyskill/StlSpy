@@ -48,7 +48,7 @@ public partial class TaskProgressView : UserControl
                     (totalTasks == 2) ? "(+ 1 task)" : $"(+ {totalTasks - 1} tasks)";
             }
 
-            TaskName.Content = task.Name;
+            TaskName.Text = task.Name;
             TaskProgress.IsVisible = ProgressBar.IsVisible = task.Progress != 0;
             if (TaskProgress.IsVisible)
             {

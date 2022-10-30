@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="StlSpy.Views.MenuButton">
-    <Menu Classes="ButtonLike" Padding="0">
+    <Menu Name="TopMenu" Classes="ButtonLike" Padding="0">
         <MenuItem Name="Menu" Background="Transparent" FontSize="16"></MenuItem>
     </Menu>
 </UserControl>

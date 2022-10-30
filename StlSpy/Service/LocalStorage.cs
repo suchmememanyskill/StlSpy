@@ -245,6 +245,8 @@ public class LocalStorage : ICollectionStorage
         return _localPosts;
     }
 
+    public bool ArePostsLoaded() => _localPosts != null;
+
     private async Task<CollectionHolder> GetLocalCollections()
     {
         if (_localCollections != null)

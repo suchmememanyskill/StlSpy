@@ -3,6 +3,7 @@ using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.Primitives;
+using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using StlSpy.Extensions;
 using StlSpy.Utils;
@@ -12,7 +13,7 @@ namespace StlSpy.Views
     public partial class MenuButton : UserControl
     {
         private List<TemplatedControl> _items = new();
-        
+
         public MenuButton()
         {
             InitializeComponent();
