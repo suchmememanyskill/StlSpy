@@ -5,7 +5,8 @@
         xmlns:views="clr-namespace:StlSpy.Views"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="StlSpy.MainWindow"
-        Title="StlSpy">
+        Title="StlSpy"
+        Icon="/Assets/icon.png">
     <DockPanel>
         <Panel Background="OrangeRed" Width="200" DockPanel.Dock="Left" Name="HeaderBackground">
             <DockPanel>
