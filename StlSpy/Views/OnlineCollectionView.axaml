@@ -5,14 +5,13 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="StlSpy.Views.OnlineCollectionView">
     <DockPanel>
+        <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Name="Header" Margin="10" DockPanel.Dock="Top">
+            <TextBox Watermark="Search" Name="SearchBox" Width="200" />
+            <Button Name="DeleteCollection" />
+            <Button Name="ShareCollection" />
+        </StackPanel>
         <ScrollViewer>
-            <StackPanel Name="VerticalStackPanel" Spacing="10" Margin="10">
-                <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Name="Header">
-                    <TextBox Watermark="Search" Name="SearchBox" Width="200" />
-                    <Button Name="DeleteCollection" />
-                    <Button Name="ShareCollection" />
-                </StackPanel>
-            </StackPanel>
+            <StackPanel Name="VerticalStackPanel" Spacing="10" />
         </ScrollViewer>
     </DockPanel>
 </UserControl>
