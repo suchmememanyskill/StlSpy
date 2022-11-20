@@ -122,6 +122,7 @@ namespace StlSpy.Views
         public void OnSearch()
         {
             _query = SearchBox.Text;
+            _page = 1;
             Get();
         }
         
