@@ -5,7 +5,7 @@
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="StlSpy.Views.PreviewPostCollectionView">
   <StackPanel Spacing="10">
-      <ListBox HorizontalAlignment="Center" Name="List" Background="Transparent">
+      <ListBox HorizontalAlignment="Center" Name="List" Background="Transparent" SelectionMode="Multiple">
           <ListBox.ItemsPanel>
               <ItemsPanelTemplate>
                   <WrapPanel />

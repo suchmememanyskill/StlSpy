@@ -60,8 +60,8 @@ public partial class PostDetailsWindow : Window
 
             ExpandedMenuButton openIn = new(new List<Command>()
             {
-                new("PrusaSlicer", _preview.OpenInPrusaSlicer),
-                new("Explorer", _preview.OpenInExplorer),
+                new("PrusaSlicer", () => _preview.OpenInPrusaSlicer()),
+                new("Explorer", () => _preview.OpenInExplorer()),
                 new("Website", OpenPostUrl)
             }, "Open in");
             

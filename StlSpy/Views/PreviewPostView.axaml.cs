@@ -25,7 +25,6 @@ namespace StlSpy.Views
         public PreviewPost Post { get; }
         public ApiDescription Api { get; }
         private bool _downloadedImage = false;
-        private ContextMenu _contextMenu = new();
 
         [Binding(nameof(Panel), "Background")] 
         [Binding(nameof(CheckboxBorder), "Background")]
@@ -65,15 +64,6 @@ namespace StlSpy.Views
             SetControls();
             UpdateView();
             EffectiveViewportChanged += EffectiveViewportChangedReact;
-            
-            _contextMenu.ContextMenuOpening += (sender, args) =>
-            {
-                _contextMenu.Items = new List<Command>() { new("Loading...") }.Select(x => x.ToTemplatedControl())
-                    .ToList();
-                SetContextMenu();
-            };
-            TopPanel.ContextMenu = _contextMenu;
-            
             CheckboxBorder.IsVisible = !Settings.Get().HidePrintedLabel;
 
             if (CheckboxBorder.IsVisible)
@@ -108,6 +98,9 @@ namespace StlSpy.Views
             DownloadImage();
         }
 
+        public async Task<bool> IsPostPartOfCollection(ICollectionStorage storage, CollectionId collection)
+            => await storage.IsPostPartOfCollection(Post.UniversalId, collection);
+
         public async Task<List<Command>> GetAddToCollectionList(ICollectionStorage storage)
         {
             List<Command> commands = new()
@@ -119,7 +112,7 @@ namespace StlSpy.Views
             foreach (var collection in collections)
             {
                 if (await storage.IsPostPartOfCollection(Post.UniversalId, collection))
-                    commands.Add(new($"Remove from {collection.Name}", () => RemovePostFromCollection(null, storage, collection)));
+                    commands.Add(new($"Remove from {collection.Name}", () => RemovePostFromCollection( storage, collection)));
                 else
                     commands.Add(new($"Add to {collection.Name}", () => AddPostToCollection(null, storage, collection)));
             }
@@ -127,44 +120,16 @@ namespace StlSpy.Views
             return commands;
         }
 
-        private async void OpenPostDetails()
+        public async Task OpenPostDetails()
         {
             PostDetailsWindow window = new(this);
             window.Show(MainWindow.Window!);
         }
 
-        private async void RemovePostFromCollection(Post? post, ICollectionStorage storage, CollectionId collection)
+        public async Task RemovePostFromCollection(ICollectionStorage storage, CollectionId collection)
         {
-            post ??= await ConvertToPost();
-            await storage.RemovePost(collection, post.UniversalId);
+            await storage.RemovePost(collection, Post.UniversalId);
             OnNeedListReload?.Invoke();
-        }
-
-        private async void SetContextMenu()
-        {
-            List<Command> commands = new()
-            {
-                new("Show Details", OpenPostDetails),
-                new($"Post: {Post.Name}", () => Utils.Utils.OpenUrl(Post.Website)),
-                new($"By: {Post.Author.Name}", () => Utils.Utils.OpenUrl(Post.Author.Website)),
-                new("Copy Universal ID to Clipboard", CopyUID),
-                new(),
-                new("Open in"),
-                new("PrusaSlicer", OpenInPrusaSlicer),
-                new("Explorer", OpenInExplorer),
-                new(),
-            };
-
-            commands.AddRange(await GetAddToCollectionList(LocalStorage.Get()));
-            commands.Add(new());
-            commands.AddRange(await GetAddToCollectionList(OnlineStorage.Get()));
-            
-            _contextMenu.Items = commands.Select(x => x.ToTemplatedControl()).ToList();
-        }
-
-        private async void CopyUID()
-        {
-            await ClipboardService.SetTextAsync(Post.UniversalId);
         }
 
         public async Task<Post> ConvertToPost()
@@ -175,7 +140,7 @@ namespace StlSpy.Views
             return post;
         }
 
-        private async Task AddPostToCollection(Post? post, ICollectionStorage storage, CollectionId collection)
+        public async Task AddPostToCollection(Post? post, ICollectionStorage storage, CollectionId collection)
         {
             post ??= await ConvertToPost();
             AppTask task = new($"Adding {post.Name} to {collection.Name}");
@@ -195,7 +160,7 @@ namespace StlSpy.Views
             task.Complete();
         }
         
-        private async Task<string> DownloadPost()
+        public async Task<string> DownloadPost()
         {
             Post post = await ConvertToPost();
             LocalStorage storage = LocalStorage.Get();
@@ -205,7 +170,7 @@ namespace StlSpy.Views
             return (await storage.GetFilesPath(post))!;
         }
 
-        public async void OpenInPrusaSlicer()
+        public async Task OpenInPrusaSlicer()
         {
             string path = await DownloadPost();
             
@@ -216,7 +181,7 @@ namespace StlSpy.Views
                 await Utils.Utils.ShowMessageBox(":(", "Failed to open PrusaSlicer");
         }
 
-        public async void OpenInExplorer()
+        public async Task OpenInExplorer()
         {
             string path = await DownloadPost();
             Utils.Utils.OpenFolder(path);
