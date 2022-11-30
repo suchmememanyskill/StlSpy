@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
@@ -25,6 +26,7 @@ namespace StlSpy.Views
         public PreviewPost Post { get; }
         public ApiDescription Api { get; }
         private bool _downloadedImage = false;
+        private int _clickCount = 0;
 
         [Binding(nameof(Panel), "Background")] 
         [Binding(nameof(CheckboxBorder), "Background")]
@@ -77,9 +79,11 @@ namespace StlSpy.Views
                     Settings.Get().RemovePrintedUid(Post.UniversalId);
             }
 
-            PointerPressed += (sender, args) =>
+            PointerPressed += (sender, args) => _clickCount = args.ClickCount;
+
+            PointerReleased += (sender, args) =>
             {
-                if (args.ClickCount == 2)
+                if (_clickCount == 2 && args.InitialPressMouseButton == MouseButton.Left)
                     OpenPostDetails();
             };
         }
