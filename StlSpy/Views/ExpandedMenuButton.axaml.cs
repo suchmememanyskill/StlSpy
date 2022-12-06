@@ -57,7 +57,7 @@ public partial class ExpandedMenuButton : UserControl
             case CommandType.SubMenu:
                 MenuButton button = new MenuButton(c.SubCommands, c.Text!)
                 {
-                    HorizontalAlignment = HorizontalAlignment.Left,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                     TopMenu =
                     {
                         Background = Brushes.Transparent,
@@ -65,6 +65,7 @@ public partial class ExpandedMenuButton : UserControl
                     },
                     Menu =
                     {
+                        HorizontalAlignment = HorizontalAlignment.Stretch,
                         FontSize = 14,
                         Padding = new(3)
                     }
@@ -85,7 +86,7 @@ public partial class ExpandedMenuButton : UserControl
                         c.Action?.Invoke();
                         OnButtonPress?.Invoke(c.Text!);
                     }),
-                    HorizontalAlignment = HorizontalAlignment.Left,
+                    HorizontalAlignment = HorizontalAlignment.Stretch,
                     Background = Brushes.Transparent,
                     FontSize = 14,
                     Padding = new(3),

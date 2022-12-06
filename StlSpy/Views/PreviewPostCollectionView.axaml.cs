@@ -20,6 +20,7 @@ namespace StlSpy.Views
     {
         private List<PreviewPostView> _posts = new();
         private ContextMenu _contextMenu = new();
+        public event Action? OnNeedListReload;
         
         public PreviewPostCollectionView()
         {
@@ -161,8 +162,12 @@ namespace StlSpy.Views
             foreach (var previewPostView in GetSelectedPosts())
             {
                 if (await previewPostView.IsPostPartOfCollection(storage, collection))
-                    await previewPostView.RemovePostFromCollection(storage, collection);
+                {
+                    await storage.RemovePost(collection, previewPostView.Post.UniversalId);
+                }
             }
+            
+            OnNeedListReload?.Invoke();
         }
 
         private async void OpenAllInPrusaSlicer()

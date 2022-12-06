@@ -45,6 +45,8 @@ namespace StlSpy.Views
                 _searchQuery = SearchBox.Text;
                 _view.Search(_searchQuery);
             };
+
+            _view.OnNeedListReload += Get;
             
             AddTopButtons();
         }
