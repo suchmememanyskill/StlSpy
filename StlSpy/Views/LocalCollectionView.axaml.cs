@@ -7,6 +7,7 @@ using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Markup.Xaml;
 using Avalonia.Media;
+using MessageBox.Avalonia.Enums;
 using StlSpy.Extensions;
 using StlSpy.Model;
 using StlSpy.Model.PostsEndpoint;
@@ -107,6 +108,12 @@ namespace StlSpy.Views
         [Command(nameof(DeleteCollection))]
         public async void Delete()
         {
+            var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager
+                .GetMessageBoxStandardWindow($"Delete collection {_id.Name}", $"Are you sure you want to delete the collection '{_id.Name}', Including all models that are stored only inside this collection?", ButtonEnum.YesNo);
+
+            if ((await messageBoxStandardWindow.Show()) != ButtonResult.Yes)
+                return;
+            
             _view.SetText($"Removing {_id.Name}...");
             Header.IsVisible = false;
 
