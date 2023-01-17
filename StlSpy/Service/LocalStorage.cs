@@ -296,6 +296,9 @@ public class LocalStorage : ICollectionStorage
 
     public async Task<GenericCollection?> GetPosts(CollectionId id)
     {
+        if (id.Id == "ALL")
+            return new(id, await GetAllLocalPosts());
+        
         CollectionHolder? collections = await GetLocalCollections();
         Collection? col = collections?.Collections.Find(x => x.Name == id.Name);
 

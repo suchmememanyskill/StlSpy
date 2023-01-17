@@ -85,6 +85,7 @@ namespace StlSpy
                 .Select(x => new Command(x.Name, () => ChangeViewToLocalCollectionsType(x))).ToList();
             
             localCollectionItems.Add(new());
+            localCollectionItems.Add(new("All", () => ChangeViewToLocalCollectionsType(new CollectionId("ALL", "All"))));
             localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, LocalStorage.Get(), false))));
             localCollectionItems.Add(new("New Custom Post", () => SetView(new NewPostView())));
             

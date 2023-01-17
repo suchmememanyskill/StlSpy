@@ -36,7 +36,7 @@ namespace StlSpy.Views
             VerticalStackPanel.Children.Add(_view);
             Get();
 
-            DeleteCollection.IsVisible = id.Name != "Downloads";
+            DeleteCollection.IsVisible = id.Name != "Downloads" && id.Id != "ALL";
 
             SearchBox.PropertyChanged += (_, _) =>
             {
@@ -49,7 +49,8 @@ namespace StlSpy.Views
 
             _view.OnNeedListReload += Get;
             
-            AddTopButtons();
+            if (id.Id != "ALL")
+                AddTopButtons();
         }
 
         public LocalCollectionView()
