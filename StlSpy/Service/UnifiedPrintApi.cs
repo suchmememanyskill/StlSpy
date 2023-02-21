@@ -11,7 +11,7 @@ namespace StlSpy.Service;
 
 public class UnifiedPrintApi
 {
-    private static readonly string SITE = "http://152.70.57.126:8520";
+    private static readonly string SITE = "https://vps.suchmeme.nl/print";
 
     public static async Task<List<ApiDescription>> PostsServices() =>
         JsonConvert.DeserializeObject<List<ApiDescription>>(
