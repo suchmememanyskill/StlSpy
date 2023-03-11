@@ -95,13 +95,13 @@ namespace StlSpy.Views
                 commands.Add(new("Show Details", OpenAllDetails));
                 commands.Add(new($"Post: {posts[0].Post.Name}", () => Utils.Utils.OpenUrl(posts[0].Post.Website)));
                 commands.Add(new($"By: {posts[0].Post.Author.Name}", () => Utils.Utils.OpenUrl(posts[0].Post.Author.Website)));
-                commands.Add(new("Copy Universal ID to Clipboard", CopyAllUIDToClipboard));
+                commands.Add(new("Copy URL to Clipboard", CopyAllUIDToClipboard));
             }
             else
             {
                 commands.Add(new("Multiple items are selected"));
                 commands.Add(new("Show Details of All", OpenAllDetails));
-                commands.Add(new("Copy Universal ID of All to Clipboard", CopyAllUIDToClipboard));
+                commands.Add(new("Copy URLs to Clipboard", CopyAllUIDToClipboard));
             }
 
             commands.Add(new());
@@ -203,7 +203,7 @@ namespace StlSpy.Views
 
         private async void CopyAllUIDToClipboard()
         {
-            await ClipboardService.SetTextAsync(string.Join(", ", GetSelectedPosts().Select(x => x.Post.UniversalId)));
+            await ClipboardService.SetTextAsync(string.Join(", ", GetSelectedPosts().Select(x => x.Post.Website.AbsoluteUri)));
         }
 
         private List<PreviewPostView> GetSelectedPosts()

@@ -65,7 +65,7 @@ namespace StlSpy
             List<Command> searchCommands = _apis.Select(x => new Command(x.Name, () => ChangeViewToSearchType(x))).ToList();
             
             searchCommands.Add(new Command());
-            searchCommands.Add(new("Search for Universal IDs", () => ChangeViewToSearchType(null)));
+            searchCommands.Add(new("Search by URLs", () => ChangeViewToSearchType(null)));
 
             ExpandedMenuButton search = 
                 new(searchCommands, "Search");

@@ -86,7 +86,7 @@ namespace StlSpy.Views
 
         private async Task<List<PreviewPostView>> GetUidPosts()
         {
-            List<string> filteredUids = _query.Split(',').Select(x =>
+            List<string> filteredUids = _query.Split(',').Select(x => x.Trim()).Select(x =>
             {
                 if (x.StartsWith("https://www.thingiverse.com/thing:"))
                     return $"thingiverse:{x.Split(':').Last()}";
