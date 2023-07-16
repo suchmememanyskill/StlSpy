@@ -26,42 +26,42 @@ namespace StlSpy.Views
         {
             InitializeComponent();
             
-            _contextMenu.ContextMenuOpening += (sender, args) =>
+            _contextMenu.Opening += (sender, args) =>
             {
-                _contextMenu.Items = new List<Command>() { new("Loading...") }.Select(x => x.ToTemplatedControl())
+                _contextMenu.ItemsSource = new List<Command>() { new("Loading...") }.Select(x => x.ToTemplatedControl())
                     .ToList();
                 GenerateCommands();
             };
             List.ContextMenu = _contextMenu;
         }
 
-        public void SetText(string text)
+        public async Task SetText(string text)
         {
-            List.Items = _posts = new();
+            List.ItemsSource = _posts = new();
             Label.Content = text;
             Label.IsVisible = !string.IsNullOrWhiteSpace(text);
             CountLabel.IsVisible = false;
         }
 
-        public void SetPosts(List<PreviewPostView> posts)
+        public async Task SetPosts(List<PreviewPostView> posts)
         {
             if (posts.Count <= 0)
             {
-                SetText("No posts found");
+                await SetText("No posts found");
                 return;
             }
-
-            List.Items = _posts = posts;
+            
+            List.ItemsSource = _posts = posts;
             Label.Content = "";
             Label.IsVisible = false;
             CountLabel.IsVisible = true;
             CountLabel.Content = $"Found {_posts.Count} posts";
         }
 
-        public async void SetPosts(Task<List<PreviewPostView>> postsTask)
+        public async Task SetPosts(Task<List<PreviewPostView>> postsTask)
         {
-            SetText("Loading...");
-            SetPosts(await postsTask);
+            await SetText("Loading...");
+            await SetPosts(await postsTask);
         }
 
         public void Search(string? query)
@@ -83,7 +83,7 @@ namespace StlSpy.Views
 
             if (posts.Count <= 0)
             {
-                _contextMenu.Items = new List<Command>() { new Command("Nothing is selected") }
+                _contextMenu.ItemsSource = new List<Command>() { new Command("Nothing is selected") }
                     .Select(x => x.ToTemplatedControl()).ToList();
                 return;
             }
@@ -114,7 +114,7 @@ namespace StlSpy.Views
             commands.Add(new());
             commands.AddRange(await GenerateAddAndRemoveCommands(OnlineStorage.Get()));
             
-            _contextMenu.Items = commands.Select(x => x.ToTemplatedControl()).ToList();
+            _contextMenu.ItemsSource = commands.Select(x => x.ToTemplatedControl()).ToList();
         }
 
         private async Task<List<Command>> GenerateAddAndRemoveCommands(ICollectionStorage storage)

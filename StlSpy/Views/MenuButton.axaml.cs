@@ -23,13 +23,13 @@ namespace StlSpy.Views
             : this()
         {
             Menu.Header = header;
-            Menu.Items = _items = new List<TemplatedControl>();
+            Menu.ItemsSource = _items = new List<TemplatedControl>();
         }
 
         public MenuButton(IEnumerable<TemplatedControl> items, string header)
             : this(header)
         {
-            Menu.Items = _items = items.ToList();
+            Menu.ItemsSource = _items = items.ToList();
         }
 
         public MenuButton(IEnumerable<Command> items, string header)
@@ -40,8 +40,8 @@ namespace StlSpy.Views
         public void Add(Command command)
         {
             _items.Add(command.ToTemplatedControl());
-            Menu.Items = null;
-            Menu.Items = _items;
+            Menu.ItemsSource = null;
+            Menu.ItemsSource = _items;
         }
 
         public void SetFontSize(double fontSize) => Menu.FontSize = fontSize;

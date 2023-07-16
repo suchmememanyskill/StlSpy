@@ -95,7 +95,7 @@ namespace StlSpy.Views
         
         private void EffectiveViewportChangedReact(object? obj, EffectiveViewportChangedEventArgs args)
         {
-            if (args.EffectiveViewport.IsEmpty)
+            if (args.EffectiveViewport.Width == 0 && args.EffectiveViewport.Height == 0)
                 return;
         
             EffectiveViewportChanged -= EffectiveViewportChangedReact;

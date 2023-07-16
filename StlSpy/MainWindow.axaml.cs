@@ -58,10 +58,14 @@ namespace StlSpy
             ExpandedMenuButton sites = new(_apis.Select(x =>
             {
                 return new Command(x.Name, x.SortTypes.Select(y => new Command(y.DisplayName, () => ChangeViewToSortType(x, y))).ToList());
+            }).Concat(new List<Command>()
+            {
+                new (),
+                new ("Search", () => ChangeViewToSearchMerged())
             }), "Sites");
             
             StackPanel.Children.Add(sites);
-
+        /*
             List<Command> searchCommands = _apis.Select(x => new Command(x.Name, () => ChangeViewToSearchType(x))).ToList();
             
             searchCommands.Add(new Command());
@@ -71,6 +75,7 @@ namespace StlSpy
                 new(searchCommands, "Search");
             
             StackPanel.Children.Add(search);
+        */
 
             List<Command> onlineCollectionItems = (await onlineStorage.GetCollections())
                 .Select(x => new Command(x.Name, () => ChangeViewToOnlineCollectionsType(x))).ToList();
@@ -94,7 +99,7 @@ namespace StlSpy
             StackPanel.Children.Add(new ExpandedMenuButton(new List<Command>(){new("Settings", () => SetView(new SettingsView()))}, "Misc"));
         }
 
-        public void SetContent(IControl control)
+        public void SetContent(Control control)
         {
             MainContent.Children.Clear();
             MainContent.Children.Add(control);
@@ -102,7 +107,7 @@ namespace StlSpy
 
         public void SetView(IMainView view)
         {
-            SetContent(view);
+            SetContent(view as Control);
             IBrush? brush = view.HeaderColor();
             if (brush != null)
                 HeaderBackground.Background = brush;
@@ -122,6 +127,11 @@ namespace StlSpy
                 SetView(new SearchView(true));
             else
                 SetView(new SearchView(api));
+        }
+
+        public void ChangeViewToSearchMerged()
+        {
+            SetView(new SearchViewMerged(_apis));
         }
 
         public void ChangeViewToLocalCollectionsType(CollectionId id)

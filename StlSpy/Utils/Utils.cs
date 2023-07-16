@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using MsBox.Avalonia;
 
 namespace StlSpy.Utils;
 
@@ -59,8 +60,8 @@ public static class Utils
 
     public static async Task ShowMessageBox(string title, string message)
     {
-        var messageBoxStandardWindow = MessageBox.Avalonia.MessageBoxManager
-            .GetMessageBoxStandardWindow(title, message);
-        await messageBoxStandardWindow.Show();
+        var messageBoxStandardWindow = MessageBoxManager
+            .GetMessageBoxStandard(title, message);
+        await messageBoxStandardWindow.ShowAsync();
     }
 }

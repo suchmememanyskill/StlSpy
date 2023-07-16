@@ -4,7 +4,7 @@ using Avalonia.Media;
 
 namespace StlSpy.Service;
 
-public interface IMainView : IControl
+public interface IMainView
 {
     public string MainText();
     public string SubText();
