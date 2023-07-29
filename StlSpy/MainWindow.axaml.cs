@@ -92,6 +92,7 @@ namespace StlSpy
             localCollectionItems.Add(new("All", () => ChangeViewToLocalCollectionsType(new CollectionId("ALL", "All"))));
             localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, LocalStorage.Get(), false))));
             localCollectionItems.Add(new("New Custom Post", () => SetView(new NewPostView())));
+            localCollectionItems.Add(new("Import Share ID", () => SetView(new ImportCollectionView(SetTopButtons))));
             
             StackPanel.Children.Add(new ExpandedMenuButton(localCollectionItems, "Local Collections"));
 

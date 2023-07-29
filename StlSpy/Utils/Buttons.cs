@@ -61,7 +61,12 @@ public static class Buttons
         return button;
     }
 
-    private static async void HandleAddAllToCollection(Func<Task<GenericCollection?>> getPosts, Action? onStartInvoke,
+    public static async Task AddAllToCollectionNow(GenericCollection collection, ICollectionStorage targetStorage, CollectionId targetId)
+    {
+        await HandleAddAllToCollection(async () => collection, null, null, targetStorage, targetId);
+    }
+    
+    private static async Task HandleAddAllToCollection(Func<Task<GenericCollection?>> getPosts, Action? onStartInvoke,
         Action? onEndInvoke, ICollectionStorage storage, CollectionId target)
     {
         onStartInvoke?.Invoke();

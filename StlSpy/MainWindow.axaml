@@ -16,7 +16,7 @@
                 </StackPanel>
                 <views:TaskProgressView DockPanel.Dock="Bottom" />
                 <ScrollViewer>
-                    <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10" Name="StackPanel"  />
+                    <StackPanel Width="180" Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10" Name="StackPanel"  />
                 </ScrollViewer>
             </DockPanel>
         </Panel>

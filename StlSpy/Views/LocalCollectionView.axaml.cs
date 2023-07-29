@@ -150,7 +150,7 @@ namespace StlSpy.Views
             await task.WaitUntilReady();
             await _view.SetText("Creating snapshot of collection...");
             OnlineStorage storage = OnlineStorage.Get();
-            var id = await storage.AddCollection($"Shared Collection of '{_id.Name}' at {DateTime.Now}");
+            var id = await storage.AddCollection($"{_id.Name} (Shared at {DateTime.Now})");
 
             int successfulCount = 0;
             int nonSuccessfulCount = 0;
