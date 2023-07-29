@@ -14,6 +14,7 @@ using StlSpy.Model;
 using StlSpy.Model.PostsEndpoint;
 using StlSpy.Service;
 using StlSpy.Utils;
+using TextCopy;
 
 namespace StlSpy.Views
 {
@@ -69,6 +70,8 @@ namespace StlSpy.Views
             
             Header.Children.Add(addToOnlineCollections);
             Header.Children.Add(addToLocalCollections);
+            
+            Header.Children.Add(Buttons.CreateButton("Share Collection", OnShareCollection));
 
             if (File.Exists("DEV"))
             {
@@ -138,6 +141,44 @@ namespace StlSpy.Views
 
             _view.SetText($"Removed {_id.Name}");
             ReloadTopBar?.Invoke();
+        }
+
+        private async void OnShareCollection()
+        {
+            LocalStorage localStorage = LocalStorage.Get();
+            var posts = await localStorage.GetPosts(_id)!;
+            
+            AppTask task = new("Creating snapshot");
+            await task.WaitUntilReady();
+            await _view.SetText("Creating snapshot of collection...");
+            OnlineStorage storage = OnlineStorage.Get();
+            var id = await storage.AddCollection($"Shared Collection of '{_id.Name}' at {DateTime.Now}");
+
+            int successfulCount = 0;
+            int nonSuccessfulCount = 0;
+            int len = (posts?.Posts?.Count ?? 0);
+            
+            for (int i = 0; i < len; i++)
+            {
+                int total = i + 1;
+                task.Progress = total / (float)len * 100f;
+                task.TextProgress = $"{total}/{len}";
+                try
+                {
+                    await storage.AddPost(id, posts!.Posts![i]);
+                    successfulCount++;
+                }
+                catch
+                {
+                    nonSuccessfulCount++;
+                }
+            }
+
+            await ClipboardService.SetTextAsync(id.Id);
+            await Utils.Utils.ShowMessageBox("Collection Successfully Shared",
+                $"Successfully shared collection. Code is {id.Id} and has been shared to your clipboard\nFailed to share {nonSuccessfulCount} posts. {len} total shared.");
+            
+            task.Complete();
         }
     }
 }

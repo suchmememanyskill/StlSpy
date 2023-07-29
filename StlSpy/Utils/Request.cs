@@ -40,10 +40,12 @@ namespace StlSpy.Utils
 
         public static string GetString(Uri uri) => GetString(uri, new());
 
-        public static async Task<string> GetStringAsync(Uri uri) => await GetStringAsync(uri, new());
+        public static async Task<string> GetStringAsync(Uri uri, int timeoutSeconds = 100) => await GetStringAsync(uri, new Dictionary<string, string>(), timeoutSeconds);
 
         public static string GetString(Uri uri, Dictionary<string, string> headers)
         {
+            
+            
             using (var client = new WebClient())
             {
                 foreach (var kv in headers)
@@ -53,14 +55,16 @@ namespace StlSpy.Utils
 
         }
 
-        public static async Task<string> GetStringAsync(Uri uri, Dictionary<string, string> headers)
+        public static async Task<string> GetStringAsync(Uri uri, Dictionary<string, string> headers, int timeoutSeconds = 100)
         {
-            using (var client = new WebClient())
+            using (var client = new HttpClient())
             {
                 foreach (var kv in headers)
-                    client.Headers[kv.Key] = kv.Value;
+                    client.DefaultRequestHeaders.Add(kv.Key, kv.Value);
 
-                return await client.DownloadStringTaskAsync(uri);
+                client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
+                
+                return await client.GetStringAsync(uri);
             }
         }
 
