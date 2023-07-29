@@ -62,12 +62,17 @@ public class OnlineStorage : ICollectionStorage
         progress?.Report(100);
     }
 
-    public async Task<CollectionId> AddCollection(string name)
+    public async Task<CollectionId> AddCollection(string name) => await AddCollection(name, true);
+    
+    public async Task<CollectionId> AddCollection(string name, bool saveToDisk = true)
     {
         string token = await UnifiedPrintApi.NewOnlineCollection(name);
-        var items = await Load();
-        items.Add(token, name);
-        await Save();
+        if (saveToDisk)
+        {
+            var items = await Load();
+            items.Add(token, name);
+            await Save();
+        }
         return new(token, name);
     }
 

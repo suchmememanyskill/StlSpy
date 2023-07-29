@@ -65,10 +65,6 @@ namespace StlSpy.Views
             MenuButton addToLocalCollections = await Buttons.AddAllToCollection(() => GetCollection(),
                 () => Header.IsEnabled = false, () => Header.IsEnabled = true, LocalStorage.Get(), new() { _id });
             
-            MenuButton addToOnlineCollections = await Buttons.AddAllToCollection(() => GetCollection(),
-                () => Header.IsEnabled = false, () => Header.IsEnabled = true, OnlineStorage.Get());
-            
-            Header.Children.Add(addToOnlineCollections);
             Header.Children.Add(addToLocalCollections);
             
             Header.Children.Add(Buttons.CreateButton("Share Collection", OnShareCollection));
@@ -143,6 +139,7 @@ namespace StlSpy.Views
 
         private async void OnShareCollection()
         {
+            Header.IsEnabled = false;
             LocalStorage localStorage = LocalStorage.Get();
             var posts = await localStorage.GetPosts(_id)!;
             
@@ -150,7 +147,7 @@ namespace StlSpy.Views
             await task.WaitUntilReady();
             await _view.SetText("Creating snapshot of collection...");
             OnlineStorage storage = OnlineStorage.Get();
-            var id = await storage.AddCollection($"{_id.Name} (Shared at {DateTime.Now})");
+            var id = await storage.AddCollection($"{_id.Name} (Shared at {DateTime.Now})", false);
 
             int successfulCount = 0;
             int nonSuccessfulCount = 0;
@@ -175,7 +172,9 @@ namespace StlSpy.Views
             await ClipboardService.SetTextAsync(id.Id);
             await Utils.Utils.ShowMessageBox("Collection Successfully Shared",
                 $"Successfully shared collection. Code is {id.Id} and has been shared to your clipboard\nFailed to share {nonSuccessfulCount} posts. {len} total shared.");
-            
+
+            Header.IsEnabled = true;
+            Get();
             task.Complete();
         }
 

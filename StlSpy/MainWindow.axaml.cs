@@ -76,15 +76,6 @@ namespace StlSpy
                 StackPanel.Children.Add(sites);
             }
 
-            List<Command> onlineCollectionItems = (await onlineStorage.GetCollections())
-                .Select(x => new Command(x.Name, () => ChangeViewToOnlineCollectionsType(x))).ToList();
-
-            onlineCollectionItems.Add(new());
-            onlineCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, OnlineStorage.Get(), true))));
-            onlineCollectionItems.Add(new("Import Collection", () => ChangeViewToNewCollectionView(OnImportOnlineCollection, "Import", "Online Collection", "Enter Collection code here", "Import Collection")));
-            
-            StackPanel.Children.Add(new ExpandedMenuButton(onlineCollectionItems, "Online Collections"));
-            
             List<Command> localCollectionItems = (await localStorage.GetCollections())
                 .Select(x => new Command(x.Name, () => ChangeViewToLocalCollectionsType(x))).ToList();
             
@@ -92,7 +83,9 @@ namespace StlSpy
             localCollectionItems.Add(new("All", () => ChangeViewToLocalCollectionsType(new CollectionId("ALL", "All"))));
             localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, LocalStorage.Get(), false))));
             localCollectionItems.Add(new("New Custom Post", () => SetView(new NewPostView())));
-            localCollectionItems.Add(new("Import Share ID", () => SetView(new ImportCollectionView(SetTopButtons))));
+            
+            if (_apis.Count > 0)
+                localCollectionItems.Add(new("Import Share ID", () => ChangeViewToNewCollectionView(OnImportCollectionViaShareId, "Import Collection", "from code", "Enter Share ID Here", "Import Share")));
             
             StackPanel.Children.Add(new ExpandedMenuButton(localCollectionItems, "Local Collections"));
 
@@ -140,13 +133,6 @@ namespace StlSpy
             x.ReloadTopBar += SetTopButtons;
             SetView(x);
         }
-        
-        public void ChangeViewToOnlineCollectionsType(CollectionId id)
-        {
-            var x = new OnlineCollectionView(id);
-            x.ReloadTopBar += SetTopButtons;
-            SetView(x);
-        }
 
         public void ChangeViewToNewCollectionView(Func<string, Task<string?>> onSubmit)
         {
@@ -173,30 +159,33 @@ namespace StlSpy
             
             SetTopButtons();
 
-            if (online)
-                ChangeViewToOnlineCollectionsType(id);
-            else
+            if (!online)
                 ChangeViewToLocalCollectionsType(id);
             
             return null;
         }
 
-        public async Task<string?> OnImportOnlineCollection(string token)
+        private async Task<string?> OnImportCollectionViaShareId(string input)
         {
-            OnlineStorage storage = OnlineStorage.Get();
-            string name;
+            AppTask task = new("Validating Share ID");
+            await task.WaitUntilReady();
 
-            try
-            {
-                name = await storage.ImportCollection(token);
-            }
-            catch (Exception e)
-            {
-                return e.Message;
-            }
+            OnlineStorage onlineStorage = OnlineStorage.Get();
+            GenericCollection? collection = string.IsNullOrEmpty(input)
+                ? null
+                : await onlineStorage.GetPosts(new CollectionId(input, ""));
+
+            if (collection == null)
+                return "Shared Collection not found!";
             
+            LocalStorage localStorage = LocalStorage.Get();
+            var localCollection = await localStorage.AddCollection(collection.Name.Name);
+        
+            task.Complete();
+        
+            await Buttons.AddAllToCollectionNow(collection!, localStorage, localCollection);
+            Window?.SetView(new LocalCollectionView(localCollection));
             SetTopButtons();
-            ChangeViewToOnlineCollectionsType(new(token, name));
             return null;
         }
     }
