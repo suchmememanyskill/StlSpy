@@ -177,15 +177,11 @@ namespace StlSpy
 
             if (collection == null)
                 return "Shared Collection not found!";
-            
-            LocalStorage localStorage = LocalStorage.Get();
-            var localCollection = await localStorage.AddCollection(collection.Name.Name);
-        
+
+            OnlineCollectionView view = new(collection.Name);
+            view.ReloadTopBar += SetTopButtons;
+            SetView(view);
             task.Complete();
-        
-            await Buttons.AddAllToCollectionNow(collection!, localStorage, localCollection);
-            Window?.SetView(new LocalCollectionView(localCollection));
-            SetTopButtons();
             return null;
         }
     }
