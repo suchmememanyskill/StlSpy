@@ -72,11 +72,9 @@ namespace StlSpy.Views
             Header.Children.Add(addToLocalCollections);
             
             Header.Children.Add(Buttons.CreateButton("Share Collection", OnShareCollection));
-
-            if (File.Exists("DEV"))
-            {
-                Header.Children.Add(Buttons.DumpToJson(GetCollection, () => Header.IsEnabled = false, () => Header.IsEnabled = true));
-            }
+            
+            Header.Children.Add(Buttons.DumpToJson(GetCollection, () => Header.IsEnabled = false, () => Header.IsEnabled = true));
+            Header.Children.Add(Buttons.CreateButton("Export to UIDs", ExportToUids));
         }
 
         private async void Get()
@@ -179,6 +177,16 @@ namespace StlSpy.Views
                 $"Successfully shared collection. Code is {id.Id} and has been shared to your clipboard\nFailed to share {nonSuccessfulCount} posts. {len} total shared.");
             
             task.Complete();
+        }
+
+        private async void ExportToUids()
+        {
+            LocalStorage localStorage = LocalStorage.Get();
+            var posts = await localStorage.GetPosts(_id)!;
+
+            List<string> uids = posts!.Posts.Select(x => x.UniversalId).ToList();
+            await ClipboardService.SetTextAsync(string.Join(",", uids));
+            await Utils.Utils.ShowMessageBox("Export complete", "Copied all UIDs to clipboard.\nYou can paste these in the search field under sites to load them again.");
         }
     }
 }
