@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Avalonia;
 using Avalonia.Controls;
@@ -83,6 +84,13 @@ namespace StlSpy.Views
             {
                 Post post = await _storage.NewLocalPost(name, website, authorName, authorWebsite, description);
                 await _storage.AddPost(id, post);
+                string path = await _storage.GetFilesPath(post);
+                path = Path.GetDirectoryName(path);
+                
+                File.WriteAllText(Path.Join(path, "thumbnail.jpg.placeholder"), "");
+                File.WriteAllText(Path.Join(path, "author.jpg.placeholder"), "");
+                
+                Utils.Utils.OpenFolder(path!);
                 MainWindow.Window?.SetView(new LocalCollectionView(id));
             }
             catch (Exception e)
