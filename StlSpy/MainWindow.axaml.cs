@@ -53,29 +53,28 @@ namespace StlSpy
             if ((await localStorage.GetCollections()).All(x => x.Name != "Downloads"))
                 await localStorage.AddCollection("Downloads");
 
-            _apis = await UnifiedPrintApi.PostsServices();
-
-            ExpandedMenuButton sites = new(_apis.Select(x =>
+            try
             {
-                return new Command(x.Name, x.SortTypes.Select(y => new Command(y.DisplayName, () => ChangeViewToSortType(x, y))).ToList());
-            }).Concat(new List<Command>()
+                _apis = await UnifiedPrintApi.PostsServices();
+            }
+            catch
             {
-                new (),
-                new ("Search", () => ChangeViewToSearchMerged())
-            }), "Sites");
-            
-            StackPanel.Children.Add(sites);
-        /*
-            List<Command> searchCommands = _apis.Select(x => new Command(x.Name, () => ChangeViewToSearchType(x))).ToList();
-            
-            searchCommands.Add(new Command());
-            searchCommands.Add(new("Search by URLs", () => ChangeViewToSearchType(null)));
+                _apis = new();
+            }
 
-            ExpandedMenuButton search = 
-                new(searchCommands, "Search");
+            if (_apis.Count > 0)
+            {
+                ExpandedMenuButton sites = new(_apis.Select(x =>
+                {
+                    return new Command(x.Name, x.SortTypes.Select(y => new Command(y.DisplayName, () => ChangeViewToSortType(x, y))).ToList());
+                }).Concat(new List<Command>()
+                {
+                    new (),
+                    new ("Search", () => ChangeViewToSearchMerged())
+                }), "Sites");
             
-            StackPanel.Children.Add(search);
-        */
+                StackPanel.Children.Add(sites);
+            }
 
             List<Command> onlineCollectionItems = (await onlineStorage.GetCollections())
                 .Select(x => new Command(x.Name, () => ChangeViewToOnlineCollectionsType(x))).ToList();
