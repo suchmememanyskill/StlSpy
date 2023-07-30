@@ -19,6 +19,7 @@ public partial class SearchViewMerged : UserControlExt<SearchViewMerged>, IMainV
     public IBrush? HeaderColor() => ApiDescription.GetLocalApiDescription().GetColorAsBrush();
     
     private List<ApiDescription> _apis;
+    private List<ApiDescription> _allApis;
     private int _perPage = 20;
 
     private string _query = "";
@@ -33,7 +34,35 @@ public partial class SearchViewMerged : UserControlExt<SearchViewMerged>, IMainV
 
     public SearchViewMerged(List<ApiDescription> apis) : this()
     {
-        _apis = apis;
+        _apis = _allApis = apis;
+
+        ApiSelect.ItemsSource = new List<ComboBoxItem>()
+        {
+            new ComboBoxItem()
+            {
+                Content = "All"
+            }
+        }.Concat(apis.Select(x => new ComboBoxItem()
+        {
+            Content = x.Name
+        })).ToList();
+
+        ApiSelect.SelectedIndex = 0;
+        ApiSelect.SelectionChanged += (sender, args) =>
+        {
+            string name = (ApiSelect.SelectedItem as ComboBoxItem).Content as string;
+            _apis = (name == "All") ? _allApis : _allApis.Where(x => x.Name == name).ToList();
+                
+            if (string.IsNullOrWhiteSpace(SearchBox.Text))
+            {
+                View.SetText("");
+                More.IsVisible = false;
+            }
+            else
+            {
+                Search();
+            }
+        };
     }
 
     private async Task<List<PreviewPostView>> GetResults()

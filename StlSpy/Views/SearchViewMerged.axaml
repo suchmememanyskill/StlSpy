@@ -9,6 +9,7 @@
         <StackPanel Name="Header" Orientation="Horizontal" HorizontalAlignment="Center" Spacing="10" Margin="10" DockPanel.Dock="Top">
             <TextBox Width="400" Watermark="Enter search query here" Name="SearchBox" />
             <Button Content="Search" Margin="0,0,10,0" Name="SearchButton" IsDefault="True"/>
+            <ComboBox SelectedIndex="0" Name="ApiSelect" />
         </StackPanel>
         <ScrollViewer Name="ScrollViewer">
             <StackPanel Name="VerticalStackPanel" Spacing="10">

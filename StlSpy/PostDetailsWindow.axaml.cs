@@ -62,25 +62,19 @@ public partial class PostDetailsWindow : Window
             {
                 new("PrusaSlicer", () => _preview.OpenInPrusaSlicer()),
                 new("Explorer", () => _preview.OpenInExplorer()),
-                new("Website", OpenPostUrl)
+                new("Browser", OpenPostUrl)
             }, "Open in");
             
             List<Command> localItems = await _preview.GetAddToCollectionList(LocalStorage.Get());
             localItems.RemoveAt(0);
             ExpandedMenuButton local = new(localItems, "Add/Remove to Local Collection");
-            
-            List<Command> onlineItems = await _preview.GetAddToCollectionList(OnlineStorage.Get());
-            onlineItems.RemoveAt(0);
-            ExpandedMenuButton online = new(onlineItems, "Add/Remove to Online Collection");
 
             openIn.OnButtonPress += _ => OnMenuButtonPress();
             local.OnButtonPress += _ => OnMenuButtonPress();
-            online.OnButtonPress += _ => OnMenuButtonPress();
-            
+
             CustomisableButtons.Children.Clear();
             CustomisableButtons.Children.Add(openIn);
             CustomisableButtons.Children.Add(local);
-            CustomisableButtons.Children.Add(online);
             CustomisableButtons.IsEnabled = true;
         }
         MainPanel.IsVisible = true;

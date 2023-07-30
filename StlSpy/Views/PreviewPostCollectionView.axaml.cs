@@ -111,9 +111,7 @@ namespace StlSpy.Views
             commands.Add(new());
 
             commands.AddRange(await GenerateAddAndRemoveCommands(LocalStorage.Get()));
-            commands.Add(new());
-            commands.AddRange(await GenerateAddAndRemoveCommands(OnlineStorage.Get()));
-            
+
             _contextMenu.ItemsSource = commands.Select(x => x.ToTemplatedControl()).ToList();
         }
 
