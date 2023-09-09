@@ -133,8 +133,8 @@ public partial class SearchViewMerged : UserControlExt<SearchViewMerged>, IMainV
             {
                 if (collection.TotalResults <= _perPage * (_page[x.Name] - 1))
                     _page.Remove(x.Name);
-                else
-                    collection.PreviewPosts.ForEach(y => _views.Add(new(y, x)));
+
+                collection.PreviewPosts.ForEach(y => _views.Add(new(y, x)));
             }
             else
             {
