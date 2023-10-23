@@ -75,6 +75,19 @@ namespace StlSpy
             
                 StackPanel.Children.Add(sites);
             }
+            
+            if (_apis.Count > 0)
+            {
+                List<Command> onlineCollectionItems = (await onlineStorage.GetCollections())
+                    .Select(x => new Command(x.Name, () => OnImportCollectionViaShareId(x.Id))).ToList();
+                
+                if (onlineCollectionItems.Count > 0)
+                    onlineCollectionItems.Add(new());
+                
+                onlineCollectionItems.Add(new("Import Share ID", () => ChangeViewToNewCollectionView(OnImportCollectionViaShareId, "Import Collection", "from code", "Enter Share ID Here", "Import Share")));
+                
+                StackPanel.Children.Add(new ExpandedMenuButton(onlineCollectionItems, "Shared Collections"));
+            }
 
             List<Command> localCollectionItems = (await localStorage.GetCollections())
                 .Select(x => new Command(x.Name, () => ChangeViewToLocalCollectionsType(x))).ToList();
@@ -84,9 +97,7 @@ namespace StlSpy
             localCollectionItems.Add(new("New Collection", () => ChangeViewToNewCollectionView(x => OnNewCollection(x, LocalStorage.Get(), false))));
             localCollectionItems.Add(new("New Custom Post", () => SetView(new NewPostView())));
             
-            if (_apis.Count > 0)
-                localCollectionItems.Add(new("Import Share ID", () => ChangeViewToNewCollectionView(OnImportCollectionViaShareId, "Import Collection", "from code", "Enter Share ID Here", "Import Share")));
-            
+
             StackPanel.Children.Add(new ExpandedMenuButton(localCollectionItems, "Local Collections"));
 
             StackPanel.Children.Add(new ExpandedMenuButton(new List<Command>(){new("Settings", () => SetView(new SettingsView()))}, "Misc"));
@@ -167,6 +178,7 @@ namespace StlSpy
 
         private async Task<string?> OnImportCollectionViaShareId(string input)
         {
+            input = input.Trim();
             AppTask task = new("Validating Share ID");
             await task.WaitUntilReady();
 

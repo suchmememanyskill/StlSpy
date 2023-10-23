@@ -67,13 +67,18 @@ public class OnlineStorage : ICollectionStorage
     public async Task<CollectionId> AddCollection(string name, bool saveToDisk = true)
     {
         string token = await UnifiedPrintApi.NewOnlineCollection(name);
+        
         if (saveToDisk)
-        {
-            var items = await Load();
-            items.Add(token, name);
-            await Save();
-        }
+            await SaveCollectionToDisk(token, name);
+        
         return new(token, name);
+    }
+
+    public async Task SaveCollectionToDisk(string token, string name)
+    {
+        var items = await Load();
+        items.Add(token, name);
+        await Save();
     }
 
     public async Task RemoveCollection(CollectionId id)

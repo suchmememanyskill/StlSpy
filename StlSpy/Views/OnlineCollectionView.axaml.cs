@@ -57,6 +57,16 @@ namespace StlSpy.Views
 
         private async void AddTopButtons()
         {
+            OnlineStorage storage = OnlineStorage.Get();
+            Header.Children.Clear();
+            Header.Children.Add(CollectionName);
+            Header.Children.Add(SearchBox);
+
+            Header.Children.Add((await storage.GetCollections()).Any(x => x.Id == _id.Id)
+                ? Buttons.CreateButton("Unpin", UnpinSharedCollection)
+                : Buttons.CreateButton("Pin", PinSharedCollection));
+
+            
             MenuButton addToLocalCollections = await Buttons.AddAllToCollection(() => GetCollection(),
                 () => Header.IsEnabled = false, () => Header.IsEnabled = true, LocalStorage.Get());
             
@@ -122,6 +132,22 @@ namespace StlSpy.Views
             List<string> uids = posts!.Posts.Select(x => x.UniversalId).ToList();
             await ClipboardService.SetTextAsync(string.Join(",", uids));
             await Utils.Utils.ShowMessageBox("Export complete", "Copied all UIDs to clipboard.\nYou can paste these in the search field under sites to load them again.");
+        }
+
+        private async void PinSharedCollection()
+        {
+            OnlineStorage storage = OnlineStorage.Get();
+            await storage.SaveCollectionToDisk(_id.Id, _id.Name);
+            ReloadTopBar?.Invoke();
+            AddTopButtons();
+        }
+
+        private async void UnpinSharedCollection()
+        {
+            OnlineStorage storage = OnlineStorage.Get();
+            await storage.RemoveCollection(_id);
+            ReloadTopBar?.Invoke();
+            AddTopButtons();
         }
     }
 }
