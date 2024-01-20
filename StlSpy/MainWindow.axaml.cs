@@ -125,14 +125,6 @@ namespace StlSpy
             SetView(new SortTypeView(api, sort));
         }
 
-        public void ChangeViewToSearchType(ApiDescription? api)
-        {
-            if (api == null)
-                SetView(new SearchView(true));
-            else
-                SetView(new SearchView(api));
-        }
-
         public void ChangeViewToSearchMerged()
         {
             SetView(new SearchViewMerged(_apis));

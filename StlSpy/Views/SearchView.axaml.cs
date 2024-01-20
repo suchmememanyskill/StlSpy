@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
@@ -94,10 +95,13 @@ namespace StlSpy.Views
                     return $"myminifactory:{x.Split('-').Last()}";
                 if (x.StartsWith("https://www.printables.com/model"))
                     return $"prusa-printables:{x.Split('/').Last().Split('-').First()}";
+                if (x.StartsWith("https://makerworld.com/en/models/"))
+                    return $"makerworld:{x.Split('/').Last().Split('#').First()}";
 
                 return x;
             }).Where(x => x.Contains(':')).Select(x => x.Trim()).Distinct().ToList();
             List<Post> posts = new();
+            Debug.WriteLine(filteredUids);
 
             foreach (var filteredUid in filteredUids)
             {

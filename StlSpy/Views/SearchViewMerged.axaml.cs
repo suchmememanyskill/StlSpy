@@ -75,6 +75,8 @@ public partial class SearchViewMerged : UserControlExt<SearchViewMerged>, IMainV
                 return $"myminifactory:{x.Split('-').Last()}";
             if (x.StartsWith("https://www.printables.com/model"))
                 return $"prusa-printables:{x.Split('/').Last().Split('-').First()}";
+            if (x.StartsWith("https://makerworld.com/en/models/"))
+                return $"makerworld:{x.Split('/').Last().Split('#').First()}";
 
             return x;
         }).ToList();
