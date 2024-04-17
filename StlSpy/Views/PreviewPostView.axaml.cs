@@ -37,12 +37,8 @@ namespace StlSpy.Views
 
         public event Action? OnNeedListReload;
 
-        public async void DownloadImage()
+        public async void GetCoverImage()
         {
-            if (_downloadedImage)
-                return;
-
-            _downloadedImage = true;
             try
             {
                 byte[]? data = await Post.Thumbnail.Get();
@@ -56,6 +52,15 @@ namespace StlSpy.Views
             {
                 Console.WriteLine($"[Exception] {e}");
             }
+        }
+        
+        public void DownloadImage()
+        {
+            if (_downloadedImage)
+                return;
+
+            _downloadedImage = true;
+            Dispatcher.UIThread.Post(GetCoverImage, DispatcherPriority.Background);
         }
         
         public PreviewPostView(PreviewPost previewPost, ApiDescription api)

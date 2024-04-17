@@ -75,7 +75,7 @@ namespace StlSpy.Views
 
         private async void Get()
         {
-            _view.SetPosts(GetPosts());
+            await _view.SetPosts(GetPosts());
         }
 
         private async Task<List<PreviewPostView>> GetPosts()
@@ -87,6 +87,7 @@ namespace StlSpy.Views
                 await load.WaitUntilReady();
                 load.Complete();
             }
+            
             return (await storage.GetPosts(_id))!.Posts.OrderByDescending(x => x.Added).Select(x =>
             {
                 var post = new PreviewPostView(x, ApiDescription.GetLocalApiDescription());

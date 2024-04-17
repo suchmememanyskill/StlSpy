@@ -27,7 +27,7 @@ namespace StlSpy.Utils
         {
             using (HttpClient client = new())
             {
-                client.Timeout = TimeSpan.FromMinutes(5);
+                client.Timeout = TimeSpan.FromMinutes(1);
 
                 foreach (var kv in headers)
                     client.DefaultRequestHeaders.Add(kv.Key, kv.Value);

@@ -339,7 +339,24 @@ public class LocalStorage : ICollectionStorage
 
         if (!AreFilesCached(post.UniversalId))
         {
-            await SavePostLocally(post, progress);
+            try
+            {
+                await SavePostLocally(post, progress);
+            }
+            catch (Exception e)
+            {
+                var path = GetPath(post.UniversalId);
+                try
+                {
+                    Directory.Delete(path, true);
+                }
+                catch
+                {
+                }
+
+                throw;
+            }
+            
         }
         
         if (!collection.UIDs.Contains(post.UniversalId))
