@@ -15,7 +15,7 @@ public class UnifiedPrintApi
 
     public static async Task<List<ApiDescription>> PostsServices() =>
         JsonConvert.DeserializeObject<List<ApiDescription>>(
-            await Request.GetStringAsync(new Uri($"{SITE}/Posts/services")))!;
+            await Request.GetStringAsync(new Uri($"{SITE}/Posts/services"), 5))!;
 
     public static async Task<PreviewPostsCollection> PostsList(string apiName, string sortType, int page = 1,
         int perPage = 20)
