@@ -57,14 +57,12 @@ namespace StlSpy.Utils
 
         public static async Task<string> GetStringAsync(Uri uri, Dictionary<string, string> headers, int timeoutSeconds = 100)
         {
-            using (var client = new HttpClient())
+            using (var client = new WebClient())
             {
                 foreach (var kv in headers)
-                    client.DefaultRequestHeaders.Add(kv.Key, kv.Value);
-
-                client.Timeout = TimeSpan.FromSeconds(timeoutSeconds);
-                
-                return await client.GetStringAsync(uri);
+                    client.Headers[kv.Key] = kv.Value;
+                client.Encoding = System.Text.Encoding.UTF8;
+                return await client.DownloadStringTaskAsync(uri);
             }
         }
 
