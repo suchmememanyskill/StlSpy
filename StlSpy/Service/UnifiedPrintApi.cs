@@ -34,8 +34,20 @@ public class UnifiedPrintApi
         parameters["page"] = page.ToString();
         parameters["perPage"] = perPage.ToString();
         parameters["query"] = query;
-        return JsonConvert.DeserializeObject<PreviewPostsCollection>(
-            await Request.GetStringAsync(new Uri($"{SITE}/Posts/list/{apiName}/search?{parameters}")))!;
+
+        try
+        {
+            return JsonConvert.DeserializeObject<PreviewPostsCollection>(
+                await Request.GetStringAsync(new Uri($"{SITE}/Posts/list/{apiName}/search?{parameters}")))!;
+        }
+        catch
+        {
+            return new()
+            {
+                PreviewPosts = new(),
+                TotalResults = 0
+            };
+        }
     }
 
     public static async Task<Post?> PostsUniversalId(string uid)

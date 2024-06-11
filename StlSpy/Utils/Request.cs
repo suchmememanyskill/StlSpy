@@ -25,17 +25,29 @@ namespace StlSpy.Utils
 
         public static async Task<byte[]> GetAsync(Uri uri, Dictionary<string, string> headers)
         {
-            using (HttpClient client = new())
+            for (int i = 0; i < 3; i++)
             {
-                client.Timeout = TimeSpan.FromMinutes(1);
+                using (HttpClient client = new())
+                {
+                    client.Timeout = TimeSpan.FromMinutes(1);
 
-                foreach (var kv in headers)
-                    client.DefaultRequestHeaders.Add(kv.Key, kv.Value);
+                    foreach (var kv in headers)
+                        client.DefaultRequestHeaders.Add(kv.Key, kv.Value);
 
-                HttpResponseMessage response = await client.GetAsync(uri);
-                response.EnsureSuccessStatusCode();
-                return await response.Content.ReadAsByteArrayAsync();
+                    HttpResponseMessage response = await client.GetAsync(uri);
+
+                    if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                    {
+                        await Task.Delay(1000);
+                        continue;
+                    }
+                
+                    response.EnsureSuccessStatusCode();
+                    return await response.Content.ReadAsByteArrayAsync();
+                }
             }
+
+            throw new Exception("Unable to fetch image");
         }
 
         public static string GetString(Uri uri) => GetString(uri, new());

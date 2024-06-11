@@ -111,9 +111,16 @@ public class LocalStorage : ICollectionStorage
         string authorPath = Path.Join(fullPath, "author.jpg");
         if (!File.Exists(authorPath))
         {
-            byte[]? thumbnail = await post.Author.Thumbnail.Get();
-            if (thumbnail != null)
-                await File.WriteAllBytesAsync(authorPath, thumbnail);
+            try
+            {
+                byte[]? thumbnail = await post.Author.Thumbnail.Get();
+                if (thumbnail != null)
+                    await File.WriteAllBytesAsync(authorPath, thumbnail);
+            }
+            catch
+            {
+                // Pass
+            }
         }
         
         progress?.Report(100);
