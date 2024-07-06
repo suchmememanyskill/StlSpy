@@ -189,6 +189,17 @@ namespace StlSpy.Views
             if (!result)
                 await Utils.Utils.ShowMessageBox(":(", "Failed to open PrusaSlicer");
         }
+        
+        public async Task OpenInBambuStudio()
+        {
+            string path = await DownloadPost();
+            
+            bool result = Utils.Utils.OpenBambuStudio(Directory.EnumerateFiles(path)
+                .Where(x => new List<string>() { ".stl", ".obj", ".3mf" }.Any(y => x.ToLower().EndsWith(y))).ToList());
+
+            if (!result)
+                await Utils.Utils.ShowMessageBox(":(", "Failed to open PrusaSlicer");
+        }
 
         public async Task OpenInExplorer()
         {

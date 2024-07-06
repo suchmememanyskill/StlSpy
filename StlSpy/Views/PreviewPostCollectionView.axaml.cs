@@ -107,6 +107,7 @@ namespace StlSpy.Views
             commands.Add(new());
             commands.Add(new("Open in"));
             commands.Add(new("PrusaSlicer", OpenAllInPrusaSlicer));
+            commands.Add(new("Bambu Studio", OpenAllInBambuStudio));
             commands.Add(new("Explorer", OpenAllInExplorer));
             commands.Add(new());
 
@@ -181,6 +182,21 @@ namespace StlSpy.Views
 
             if (!Utils.Utils.OpenPrusaSlicer(paths))
                 await Utils.Utils.ShowMessageBox(":(", "Failed to open PrusaSlicer");
+        }
+        
+        private async void OpenAllInBambuStudio()
+        {
+            List<string> paths = new();
+            
+            foreach (var previewPostView in GetSelectedPosts())
+            {
+                string path = await previewPostView.DownloadPost();
+                paths.AddRange(Directory.EnumerateFiles(path)
+                    .Where(x => new List<string>() { ".stl", ".obj", ".3mf" }.Any(y => x.ToLower().EndsWith(y))).ToList());
+            }
+
+            if (!Utils.Utils.OpenBambuStudio(paths))
+                await Utils.Utils.ShowMessageBox(":(", "Failed to open Bambu Studio");
         }
 
         private async void OpenAllInExplorer()

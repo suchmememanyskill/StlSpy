@@ -57,6 +57,26 @@ public static class Utils
             return false;
         }
     }
+    
+    public static bool OpenBambuStudio(List<string> paths)
+    {
+        try
+        {
+            string stringPaths = string.Join(" ", paths.Select(x => x.Contains(" ") ? $"\"{x}\"" : x));
+                
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                Process.Start("C:/Program Files/Bambu Studio/bambu-studio.exe", stringPaths);
+            else
+                Process.Start("/usr/bin/flatpak",
+                    $"run --branch=stable --arch=x86_64 --command=entrypoint --file-forwarding com.bambulab.BambuStudio @@ {stringPaths} @@");
+            
+            return true;
+        }
+        catch (Exception e)
+        {
+            return false;
+        }
+    }
 
     public static async Task ShowMessageBox(string title, string message)
     {
