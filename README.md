@@ -1,3 +1,7 @@
+## Deprication warning
+
+StlSpy is no longer maintained, and superseded by [Mesh Organiser](https://github.com/suchmememanyskill/mesh-organiser). Open an issue on the mesh-organiser repository if you need help with migration of models.
+
 # StlSpy
 
 ![preview](preview.jpg)
